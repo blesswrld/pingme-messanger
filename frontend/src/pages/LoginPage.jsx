@@ -174,6 +174,17 @@ const LoginPage = () => {
                             </Link>
                         </p>
                     </div>
+                    <div
+                        tabIndex={0}
+                        className="collapse collapse-plus bg-base-100 border-base-300 border"
+                    >
+                        <div className="collapse-title font-semibold">
+                            How do I create an account?
+                        </div>
+                        <div className="collapse-content text-sm">
+                            Click the "Create account" button above
+                        </div>
+                    </div>
                 </div>
             </div>
 
