@@ -10,69 +10,72 @@ import { formatMessageTime } from "../lib/utils";
 function ChatContainer() {
     const {
         messages,
-        getMessages,
+        // getMessages, // Не получаем напрямую, вызываем через getState или селектор
         isMessagesLoading,
         selectedUser,
-        subscribeToMessages,
-        unsubscribeFromMessages,
+        // subscribeToMessages, // Не получаем напрямую
+        // unsubscribeFromMessages, // Не получаем напрямую
     } = useChatStore();
+
     const { authUser } = useAuthStore();
-    const messageEndRef = useRef(null);
+    const messageEndRef = useRef(null); // Ref для скролла
 
     useEffect(() => {
         if (selectedUser?._id) {
-            getMessages(selectedUser._id);
-
-            subscribeToMessages();
-
-            return () => unsubscribeFromMessages();
+            useChatStore.getState().getMessages(selectedUser._id);
+            const unsubscribe = useChatStore.getState().subscribeToMessages();
+            return unsubscribe;
         }
-    }, [
-        selectedUser?._id,
-        getMessages,
-        subscribeToMessages,
-        unsubscribeFromMessages,
-    ]);
+        // Если selectedUser сбрасывается, можно добавить логику очистки сообщений здесь
+        // else {
+        //    useChatStore.setState({ messages: [] });
+        // }
+    }, [selectedUser?._id]);
 
+    // Эффект для скролла к последнему сообщению
     useEffect(() => {
-        if (messageEndRef.current && messages) {
-            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+        if (messageEndRef.current) {
+            setTimeout(() => {
+                messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 50);
         }
-    }, [messages]);
+    }, [messages]); // Зависимость от массива сообщений
 
+    // Рендер скелетона во время загрузки
     if (isMessagesLoading) {
         return (
-            <div className="flex-1 flex-col overflow-auto">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <ChatHeader />
-                <MessageSkeleton />
+                <div className="flex-1 overflow-y-auto p-4">
+                    <MessageSkeleton />
+                </div>
                 <MessageInput />
             </div>
         );
     }
 
+    // Основной рендер чата
     return (
-        <div className="flex-1 flex flex-col overflow-auto">
+        <div className="flex-1 flex flex-col overflow-hidden">
             <ChatHeader />
-
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
                     <div
                         key={message._id}
                         className={`chat ${
-                            message.senderId === authUser._id
+                            message.senderId === authUser?._id
                                 ? "chat-end"
                                 : "chat-start"
                         }`}
-                        ref={messageEndRef}
                     >
                         <div className="chat-image avatar">
                             <div className="size-10 rounded-full border">
                                 <img
                                     src={
-                                        message.senderId === authUser._id
-                                            ? authUser.profilePic ||
+                                        message.senderId === authUser?._id
+                                            ? authUser?.profilePic ||
                                               "/avatar.png"
-                                            : selectedUser.profilePic ||
+                                            : selectedUser?.profilePic ||
                                               "/avatar.png"
                                     }
                                     alt="profile pic"
@@ -81,7 +84,9 @@ function ChatContainer() {
                         </div>
                         <div className="chat-header mb-1">
                             <time className="text-xs opacity-50 ml-1">
-                                {formatMessageTime(message.createdAt)}
+                                {message.createdAt
+                                    ? formatMessageTime(message.createdAt)
+                                    : "..."}
                             </time>
                         </div>
                         <div className="chat-bubble flex flex-col">
@@ -96,8 +101,9 @@ function ChatContainer() {
                         </div>
                     </div>
                 ))}
+                {/* Пустой div для стабильного скролла */}
+                <div ref={messageEndRef} />
             </div>
-
             <MessageInput />
         </div>
     );

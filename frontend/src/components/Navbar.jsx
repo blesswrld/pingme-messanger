@@ -3,11 +3,12 @@ import { useAuthStore } from "../store/useAuthStore";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import useThemeStore from "../store/useThemeStore";
+import useChatStore from "../store/useChatStore";
 
 const Navbar = () => {
     const { logout, authUser } = useAuthStore();
-
     const { theme, setTheme } = useThemeStore();
+    const { setSelectedUser } = useChatStore();
 
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
@@ -18,6 +19,10 @@ const Navbar = () => {
         setTheme(newTheme);
     };
 
+    const handleLogoClick = () => {
+        setSelectedUser(null); // Сбрасываем выбранного пользователя
+    };
+
     return (
         <header className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 backdrop-blur-lg bg-base-100/80">
             <div className="container mx-auto px-4 h-16">
@@ -26,6 +31,7 @@ const Navbar = () => {
                         <Link
                             to="/"
                             className="w-9 h-9 rounded-lg bg-primary/100 flex items-center justify-center"
+                            onClick={handleLogoClick} // Добавляем onClick
                         >
                             <div className="w-9 h-9 rounded-lg bg-primary/100 flex items-center justify-center">
                                 <MessageSquare className="w-5 h-5 text-primary" />

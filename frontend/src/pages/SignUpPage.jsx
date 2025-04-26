@@ -244,7 +244,7 @@ const SignUpPage = () => {
 
                     <div className="text-center mt-4">
                         <p className="text-base-content/60">
-                            Already have an account?{" "}
+                            Already have an account?
                             <Link
                                 to="/login"
                                 className="link link-primary hover:opacity-70 transition-opacity duration-200"
