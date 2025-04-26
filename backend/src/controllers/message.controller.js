@@ -5,6 +5,7 @@ import Message from "../modules/message.model.js";
 import User from "../modules/user.model.js";
 
 import { config } from "dotenv";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 config();
 
@@ -145,6 +146,11 @@ export const sendMessage = async (req, res) => {
         console.log(
             `[sendMessage] From ${senderId} to ${receiverId}: Message saved successfully.`
         );
+
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
 
         res.status(201).json(newMessage);
     } catch (error) {
