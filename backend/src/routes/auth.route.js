@@ -18,4 +18,8 @@ router.put("/update-profile", protectRoute, updateProfile);
 
 router.get("/check", protectRoute, checkAuth);
 
+// TODO: ADD ROUTES FOR GOOGLE AND GITHUB INTEGRATIONS
+
+// ...
+
 export default router;

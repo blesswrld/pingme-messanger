@@ -11,6 +11,7 @@ export const useAuthStore = create((set, get) => ({
     isLoggingIn: false,
     isUpdatingProfile: false,
     isUpdatingBio: false,
+    isUpdatingUsername: false,
     isCheckingAuth: true,
     onlineUsers: [],
     socket: null,
@@ -98,6 +99,34 @@ export const useAuthStore = create((set, get) => ({
             toast.error(error.response.data.message);
         } finally {
             set({ isUpdatingBio: false });
+        }
+    },
+    updateUsername: async (fullName) => {
+        set({ isUpdatingUsername: true });
+        const previousAuthUser = get().authUser;
+        try {
+            const res = await axiosInstance.put("/auth/update-profile", {
+                fullName,
+            });
+
+            console.log(
+                "<<< Backend response for username update:",
+                JSON.stringify(res.data)
+            );
+            console.log(
+                `>>> Updating authUser in store. Old name: "${previousAuthUser?.fullName}", New name from response: "${res.data?.fullName}"`
+            );
+
+            set({ authUser: res.data });
+
+            toast.success("Username updated successfully");
+        } catch (error) {
+            console.error("Error updating username:", error);
+            toast.error(
+                error.response?.data?.message || "Failed to update username"
+            );
+        } finally {
+            set({ isUpdatingUsername: false });
         }
     },
     connectSocket: () => {
