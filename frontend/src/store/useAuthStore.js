@@ -10,6 +10,7 @@ export const useAuthStore = create((set, get) => ({
     isSigningUp: false,
     isLoggingIn: false,
     isUpdatingProfile: false,
+    isUpdatingBio: false,
     isCheckingAuth: true,
     onlineUsers: [],
     socket: null,
@@ -68,17 +69,35 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
-    updateProfile: async (data) => {
-        set({ isUpdatingProfile: true });
+    updateProfilePic: async (profilePic) => {
+        set({ isUpdatingProfilePic: true });
         try {
-            const res = await axiosInstance.put("/auth/update-profile", data);
+            const res = await axiosInstance.put("/auth/update-profile", {
+                profilePic,
+            });
+
             set({ authUser: res.data });
             toast.success("Profile updated successfully");
         } catch (error) {
             console.log("Error in update profile:", error);
             toast.error(error.response.data.message);
         } finally {
-            set({ isUpdatingProfile: false });
+            set({ isUpdatingProfilePic: false });
+        }
+    },
+    updateBio: async (bio) => {
+        set({ isUpdatingBio: true });
+        try {
+            const res = await axiosInstance.put("/auth/update-profile", {
+                bio,
+            });
+            set({ authUser: res.data });
+            toast.success("Bio updated successfully");
+        } catch (error) {
+            console.log("Failed to update bio:", error);
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isUpdatingBio: false });
         }
     },
     connectSocket: () => {

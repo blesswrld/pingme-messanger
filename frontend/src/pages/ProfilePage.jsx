@@ -1,10 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Camera, Mail, User } from "lucide-react";
 
 const ProfilePage = () => {
-    const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+    const {
+        authUser,
+        updateProfilePic,
+        isUpdatingProfilePic,
+        updateBio,
+        isUpdatingBio,
+    } = useAuthStore();
     const [selectedImg, setSelectedImg] = useState(null);
+
+    const [bio, setBio] = useState("");
+    const [isBioEditing, setIsBioEditing] = useState(false);
+
+    useEffect(() => {
+        if (authUser) {
+            setBio(authUser.bio || "");
+        }
+    }, [authUser]);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -17,9 +32,24 @@ const ProfilePage = () => {
         reader.onload = async () => {
             const base64Image = reader.result;
             setSelectedImg(base64Image);
-            await updateProfile({ profilePic: base64Image });
+            await updateProfilePic(base64Image);
         };
     };
+
+    const handleSaveBio = async () => {
+        if (bio === (authUser?.bio || "")) {
+            setIsBioEditing(false);
+            return;
+        }
+        await updateBio(bio);
+        setIsBioEditing(false);
+    };
+
+    const handleCancelBioEdit = () => {
+        setIsBioEditing(false);
+        setBio(authUser?.bio || "");
+    };
+
     return (
         <div className="h-screen pt-20">
             <div className="max-w-2xl mx-auto p-4 py-8">
@@ -59,7 +89,7 @@ const ProfilePage = () => {
                             <label
                                 htmlFor="avatar-upload"
                                 className={`absolute bottom-0 right-0 bg-base-content hover:bg-primary duration-300 scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${
-                                    isUpdatingProfile
+                                    isUpdatingProfilePic
                                         ? "animate-pulse pointer-events-none bg-primary"
                                         : ""
                                 }`}
@@ -71,12 +101,12 @@ const ProfilePage = () => {
                                     className="hidden"
                                     accept="image/*"
                                     onChange={handleImageUpload}
-                                    disabled={isUpdatingProfile}
+                                    disabled={isUpdatingProfilePic}
                                 />
                             </label>
                         </div>
                         <p className="text-sm text-zinc-400">
-                            {isUpdatingProfile
+                            {isUpdatingProfilePic
                                 ? "Uploading..."
                                 : "Click the camera icon to update your photo"}
                         </p>
@@ -119,6 +149,53 @@ const ProfilePage = () => {
                                     Active
                                 </span>
                             </div>
+                            {""}
+                            <textarea
+                                placeholder="Bio"
+                                className={`textarea textarea-md w-full resize-none transition-colors duration-200 ${
+                                    !isBioEditing
+                                        ? "bg-base-200 cursor-pointer hover:bg-base-300"
+                                        : "bg-base-100"
+                                } ${
+                                    isUpdatingBio
+                                        ? "opacity-60 cursor-not-allowed"
+                                        : ""
+                                }`}
+                                maxLength={70}
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                readOnly={!isBioEditing}
+                                disabled={isUpdatingBio}
+                                onClick={() => {
+                                    if (!isBioEditing && !isUpdatingBio) {
+                                        setIsBioEditing(true);
+                                    }
+                                }}
+                            ></textarea>
+                            {isBioEditing && (
+                                <div className="flex justify-end gap-2">
+                                    <span className="text-xs text-zinc-400 self-center">
+                                        {bio.length}/70
+                                    </span>
+                                    <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={handleSaveBio}
+                                        disabled={isUpdatingBio}
+                                    >
+                                        {isUpdatingBio
+                                            ? "Saving..."
+                                            : "Save Bio"}
+                                    </button>
+                                    <button
+                                        className="btn btn-outline btn-error btn-sm"
+                                        onClick={handleCancelBioEdit}
+                                        disabled={isUpdatingBio}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
+                            {""}
                         </div>
                     </div>
                 </div>

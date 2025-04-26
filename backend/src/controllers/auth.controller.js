@@ -5,8 +5,6 @@ import s3Client from "../lib/s3Client.js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 
-import { config } from "dotenv";
-
 export const signup = async (req, res) => {
     const { fullName, email, password } = req.body;
     try {
@@ -94,98 +92,136 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
     const userId = req.user?._id;
-    const { profilePic } = req.body;
+    // --- 1. Получаем ОБА поля ---
+    const { profilePic, bio } = req.body;
     const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
     const S3_ENDPOINT_URL = process.env.AWS_S3_ENDPOINT_URL;
+
+    // --- 2. Создаем пустой объект для обновления ---
+    const updateData = {};
 
     console.log(`[UpdateProfile] Request for user: ${userId}`);
 
     if (!userId) {
+        // ... (проверка userId без изменений) ...
         console.error("[UpdateProfile] Error: User ID not found in request.");
         return res
             .status(401)
             .json({ message: "Unauthorized: User ID missing." });
     }
-    if (!s3Client) {
-        console.error(
-            "[UpdateProfile] CRITICAL ERROR: S3 client not initialized."
-        );
-        return res
-            .status(500)
-            .json({ message: "Server configuration error [S3 Client]." });
-    }
-    if (!BUCKET_NAME || !S3_ENDPOINT_URL) {
-        console.error(
-            "[UpdateProfile] Error: S3 Bucket Name or Endpoint URL not found in .env"
-        );
-        return res.status(500).json({
-            message: "Server configuration error [S3 Bucket/Endpoint].",
-        });
-    }
-    if (
-        !profilePic ||
-        typeof profilePic !== "string" ||
-        !profilePic.startsWith("data:image/")
-    ) {
-        console.log(
-            `[UpdateProfile] User ${userId}: Invalid or missing profilePic data (expected base64 data URL).`
-        );
-        return res.status(400).json({
-            message: "Profile picture is required as a valid base64 data URL.",
-        });
-    }
 
-    try {
-        const matches = profilePic.match(
-            /^data:image\/([A-Za-z-+/.=]+);base64,(.+)$/
-        );
-        if (!matches || matches.length !== 3) {
-            console.log(
-                `[UpdateProfile] User ${userId}: Invalid base64 format.`
-            );
+    // --- 3. Обработка profilePic (если он есть) ---
+    if (profilePic) {
+        console.log(`[UpdateProfile] User ${userId}: Processing profilePic.`);
+        if (!s3Client || !BUCKET_NAME || !S3_ENDPOINT_URL) {
+            console.error("[UpdateProfile] Error: S3 config missing.");
             return res
-                .status(400)
-                .json({ message: "Invalid base64 image format" });
+                .status(500)
+                .json({ message: "Server configuration error [S3]." });
+        }
+        if (
+            typeof profilePic !== "string" ||
+            !profilePic.startsWith("data:image/")
+        ) {
+            console.log(
+                `[UpdateProfile] User ${userId}: Invalid profilePic data format.`
+            );
+            return res.status(400).json({
+                message: "Profile picture must be a valid base64 data URL.",
+            });
         }
 
-        const fullMimeType = matches[1];
-        const base64Data = matches[2];
+        try {
+            const matches = profilePic.match(
+                /^data:image\/([A-Za-z-+/.=]+);base64,(.+)$/
+            );
+            if (!matches || matches.length !== 3)
+                throw new Error("Invalid base64 format");
+            const fullMimeType = matches[1];
+            const base64Data = matches[2];
+            const simpleImageType = fullMimeType
+                .split(";")[0]
+                .split("/")
+                .pop()
+                .split("+")[0];
+            const imageBuffer = Buffer.from(base64Data, "base64");
+            const contentType = `image/${simpleImageType}`;
+            const filename = `profilePics/${userId}/${uuidv4()}.${simpleImageType}`;
+            const uploadParams = {
+                Bucket: BUCKET_NAME,
+                Key: filename,
+                Body: imageBuffer,
+                ContentType: contentType,
+            };
 
-        const simpleImageType = fullMimeType
-            .split(";")[0]
-            .split("/")
-            .pop()
-            .split("+")[0];
-        const imageBuffer = Buffer.from(base64Data, "base64");
-        const contentType = `image/${simpleImageType}`;
-        const filename = `profilePics/${userId}/${uuidv4()}.${simpleImageType}`;
+            console.log(
+                `[UpdateProfile] User ${userId}: Uploading ${filename} to S3...`
+            );
+            const command = new PutObjectCommand(uploadParams);
+            await s3Client.send(command);
+            const fileUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
+            console.log(
+                `[UpdateProfile] User ${userId}: S3 upload successful. URL: ${fileUrl}`
+            );
 
-        const uploadParams = {
-            Bucket: BUCKET_NAME,
-            Key: filename,
-            Body: imageBuffer,
-            ContentType: contentType,
-        };
+            updateData.profilePic = fileUrl;
+        } catch (s3Error) {
+            console.error(
+                `[UpdateProfile] S3 ERROR for user ${userId}: ${s3Error.message}`
+            );
+            const statusCode = s3Error.$metadata?.httpStatusCode || 500;
+            return res
+                .status(statusCode)
+                .json({ message: "Error uploading profile picture." });
+        }
+    }
 
+    // --- 4. Обработка bio (если оно есть) ---
+    // Проверяем, что bio было передано (может быть пустой строкой)
+    if (bio !== undefined && bio !== null) {
+        console.log(`[UpdateProfile] User ${userId}: Processing bio.`);
+        if (typeof bio !== "string") {
+            return res.status(400).json({ message: "Bio must be a string." });
+        }
+        if (bio.length > 70) {
+            return res
+                .status(400)
+                .json({ message: "Bio cannot exceed 70 characters." });
+        }
+        // --- Добавляем bio в объект обновления ---
+        updateData.bio = bio;
+    }
+
+    // --- 5. Проверяем, есть ли вообще что обновлять ---
+    if (Object.keys(updateData).length === 0) {
         console.log(
-            `[UpdateProfile] User ${userId}: Uploading ${filename} to S3...`
+            `[UpdateProfile] User ${userId}: No data provided for update.`
         );
-        const command = new PutObjectCommand(uploadParams);
-        await s3Client.send(command);
-        const fileUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
+        try {
+            const currentUser = await User.findById(userId).select("-password");
+            if (!currentUser)
+                return res.status(404).json({ message: "User not found." });
+            return res.status(200).json(currentUser);
+        } catch (err) {
+            return res
+                .status(500)
+                .json({ message: "Error fetching user data." });
+        }
+    }
 
+    // --- 6. Обновляем пользователя в базе данных ---
+    try {
         console.log(
-            `[UpdateProfile] User ${userId}: Updating user in DB with URL: ${fileUrl}`
+            `[UpdateProfile] User ${userId}: Updating DB with:`,
+            Object.keys(updateData)
         );
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            { profilePic: fileUrl },
-            { new: true }
-        ).select("-password");
+        const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+            new: true,
+        }).select("-password");
 
         if (!updatedUser) {
             console.error(
-                `[UpdateProfile] Error: User ${userId} not found in DB after upload.`
+                `[UpdateProfile] Error: User ${userId} not found in DB during final update.`
             );
             return res
                 .status(404)
@@ -196,18 +232,15 @@ export const updateProfile = async (req, res) => {
             `[UpdateProfile] User ${userId}: Profile update successful.`
         );
         res.status(200).json(updatedUser);
-    } catch (error) {
+    } catch (dbError) {
         console.error(
-            `[UpdateProfile] CRITICAL ERROR for user ${userId}: ${error.message}`
+            `[UpdateProfile] DB UPDATE ERROR for user ${userId}: ${dbError.message}`
         );
-        console.error("Stack:", error.stack);
-        const statusCode =
-            error.message?.includes("base64") ||
-            error.message?.includes("format")
-                ? 400
-                : error.$metadata?.httpStatusCode || 500;
-        res.status(statusCode).json({
-            message: "Internal server error during profile update.",
+        if (dbError.name === "ValidationError") {
+            return res.status(400).json({ message: dbError.message });
+        }
+        res.status(500).json({
+            message: "Internal server error during database update.",
         });
     }
 };
