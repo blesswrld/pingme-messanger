@@ -7,25 +7,25 @@ import {
     Check,
     X,
     Edit3,
-    Loader2,
     MessageSquare,
-} from "lucide-react"; // Убедись, что Check импортирован
+    CalendarDays,
+    BadgeCheck,
+} from "lucide-react";
 import toast from "react-hot-toast";
-import { Button } from "@headlessui/react";
-import { Group, TextInput, NumberInput, Button as BTN } from "@mantine/core";
 
 const ProfilePage = () => {
     const {
         authUser,
+        isCheckingAuth,
         updateProfilePic,
         isUpdatingProfilePic,
         updateBio,
+        isUpdatingBio,
         updateUsername,
         isUpdatingUsername,
-        isUpdatingBio,
     } = useAuthStore();
-    const [selectedImg, setSelectedImg] = useState(null);
 
+    const [selectedImg, setSelectedImg] = useState(null);
     const [bio, setBio] = useState("");
     const [isBioEditing, setIsBioEditing] = useState(false);
     const [username, setUsername] = useState("");
@@ -45,8 +45,15 @@ const ProfilePage = () => {
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64Image = reader.result;
+            if (typeof base64Image !== "string") {
+                toast.error("Failed to read image.");
+                return;
+            }
             setSelectedImg(base64Image);
             await updateProfilePic(base64Image);
+        };
+        reader.onerror = () => {
+            toast.error("Error reading file.");
         };
     };
 
@@ -84,44 +91,63 @@ const ProfilePage = () => {
         setUsername(authUser?.fullName || "");
     };
 
-    // --- Helper для блокировки кнопок ---
     const isAnyLoading =
         isUpdatingProfilePic || isUpdatingBio || isUpdatingUsername;
 
+    if (isCheckingAuth) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                {/* Используем DaisyUI спиннер */}
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+        );
+    }
+
     return (
-        <div className="h-screen pt-20">
-            <div className="max-w-2xl mx-auto p-4 py-8">
-                <div className="bg-base-300 rounded-xl p-6 space-y-8">
-                    {/* --- Шапка --- */}
-                    <div className="text-center">
-                        <h1 className="text-2xl font-semibold">Profile</h1>
-                        <p className="mt-2">Your profile information</p>
-                    </div>
-                    {/* --- Секция Аватара --- */}
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="relative">
-                            <div className="avatar avatar-online">
-                                <div className="w-24 rounded-full">
-                                    <img
-                                        src={
-                                            selectedImg ||
-                                            authUser?.profilePic ||
-                                            "/avatar.png"
-                                        }
-                                        alt="Profile"
-                                        className="size-32 rounded-full object-cover border-4"
-                                    />
+        <div className="min-h-screen pt-20 pb-10 bg-base-100">
+            <div className="card max-w-2xl mx-auto bg-base-300 shadow-xl p-6 md:p-8">
+                <div className="card-body p-0">
+                    <div className="flex flex-col space-y-8">
+                        {/* Header */}
+                        <div className="flex flex-col items-center space-y-1">
+                            <h1 className="text-2xl font-semibold text-base-content">
+                                Profile
+                            </h1>
+                            <p className="text-sm text-base-content/70">
+                                Your profile information
+                            </p>
+                        </div>
+
+                        {/* Avatar Section */}
+                        <div className="flex flex-col items-center space-y-2">
+                            <div className="relative">
+                                <div className="avatar">
+                                    <div className="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                        <img
+                                            src={
+                                                selectedImg ||
+                                                authUser?.profilePic ||
+                                                "/avatar.png"
+                                            }
+                                            alt="Profile"
+                                            className="object-cover"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <label
-                                htmlFor="avatar-upload"
-                                className={`absolute bottom-0 right-0 bg-base-content hover:bg-primary duration-300 scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${
-                                    isUpdatingProfilePic
-                                        ? "animate-pulse pointer-events-none bg-primary"
-                                        : ""
-                                }`}
-                            >
-                                <Camera className="w-5 h-5 text-base-200" />
+                                <label
+                                    htmlFor="avatar-upload"
+                                    className={`btn btn-primary btn-circle btn-sm absolute bottom-1 right-1 transition-transform duration-200 hover:scale-110 ${
+                                        isUpdatingProfilePic
+                                            ? "animate-pulse cursor-not-allowed"
+                                            : "cursor-pointer"
+                                    }`}
+                                >
+                                    {isUpdatingProfilePic ? (
+                                        <span className="loading loading-spinner loading-xs"></span>
+                                    ) : (
+                                        <Camera className="w-4 h-4" />
+                                    )}
+                                </label>
                                 <input
                                     type="file"
                                     id="avatar-upload"
@@ -130,186 +156,267 @@ const ProfilePage = () => {
                                     onChange={handleImageUpload}
                                     disabled={isUpdatingProfilePic}
                                 />
-                            </label>
-                        </div>
-                        <p className="text-sm text-zinc-400">
-                            {isUpdatingProfilePic
-                                ? "Uploading..."
-                                : "Click the camera icon to update your photo"}
-                        </p>
-                    </div>
-                    <div className="space-y-6">
-                        {/* --- Блок Username --- */}
-                        <div className="space-y-1.5">
-                            <div className="text-sm text-zinc-400 flex items-center justify-between">
-                                <span className="flex items-center gap-2">
-                                    <User className="w-4 h-4" />
-                                    Username
-                                </span>
-                                {!isUsernameEditing && (
-                                    <button
-                                        onClick={() =>
-                                            setIsUsernameEditing(true)
-                                        }
-                                        className="btn btn-ghost btn-xs p-1 h-auto min-h-0"
-                                        disabled={isAnyLoading}
-                                    >
-                                        <Edit3 className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
                             </div>
-                            {!isUsernameEditing ? (
-                                <p
-                                    className="px-4 py-2.5 bg-base-200 rounded-lg border cursor-pointer hover:bg-base-100 transition-colors min-h-[2.5rem]"
-                                    onClick={() =>
-                                        !isAnyLoading &&
-                                        setIsUsernameEditing(true)
-                                    }
-                                >
-                                    {username || "Not set"}
-                                </p>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Enter username"
-                                        className="input input-bordered w-full"
-                                        value={username}
-                                        onChange={(e) =>
-                                            setUsername(e.target.value)
-                                        }
-                                        maxLength={30}
-                                        disabled={isUpdatingUsername}
-                                    />
-                                    <button
-                                        className="btn btn-success btn-sm btn-square"
-                                        onClick={handleSaveUsername}
-                                        disabled={
-                                            isUpdatingUsername ||
-                                            !username.trim() ||
-                                            username.trim().length < 3 ||
-                                            username.trim() ===
-                                                authUser?.fullName
-                                        }
-                                    >
-                                        <Check className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        className="btn btn-error btn-sm btn-square btn-outline"
-                                        onClick={handleCancelUsernameEdit}
-                                        disabled={isUpdatingUsername}
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        {/* --- Блок Email (нередактируемый) --- */}
-                        <div className="space-y-1.5">
-                            <div className="text-sm text-zinc-400 flex items-center gap-2">
-                                <Mail className="w-4 h-4" />
-                                Email Address
-                            </div>
-                            <p className="px-4 py-2.5 bg-base-200 rounded-lg border-dashed  cursor-not-allowed">
-                                {authUser?.email}
+                            <p className="text-xs text-base-content/60">
+                                {isUpdatingProfilePic
+                                    ? "Uploading image..."
+                                    : "Click the camera icon to update"}
                             </p>
                         </div>
-                        {/* --- Блок Bio --- */}
-                        <div className="space-y-1.5">
-                            <div className="text-sm text-zinc-400 flex items-center justify-between">
-                                <span className="flex items-center gap-2">
-                                    <MessageSquare width={18} height={18} />
-                                    Bio
-                                </span>
-                                {!isBioEditing && (
-                                    <button
-                                        onClick={() => setIsBioEditing(true)}
-                                        className="btn btn-ghost btn-xs p-1 h-auto min-h-0"
-                                        disabled={isAnyLoading}
+
+                        {/* User Info Sections */}
+                        <div className="flex flex-col space-y-6">
+                            {/* Username Section */}
+                            <div className="flex flex-col space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="label py-0">
+                                        <span className="label-text text-base-content/70 flex items-center gap-2">
+                                            <User className="w-4 h-4" />
+                                            Username
+                                        </span>
+                                    </label>
+                                    {!isUsernameEditing && (
+                                        <div
+                                            className="tooltip tooltip-left"
+                                            data-tip="Edit Username"
+                                        >
+                                            <button
+                                                className="btn btn-ghost btn-xs p-1 h-auto min-h-0 text-primary"
+                                                onClick={() =>
+                                                    setIsUsernameEditing(true)
+                                                }
+                                                disabled={isAnyLoading}
+                                            >
+                                                <Edit3 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {!isUsernameEditing ? (
+                                    <div
+                                        onClick={() =>
+                                            !isAnyLoading &&
+                                            setIsUsernameEditing(true)
+                                        }
+                                        className={`flex items-center px-4 py-2.5 bg-base-200 rounded-lg min-h-[2.5rem] w-full text-left transition-colors ${
+                                            isAnyLoading
+                                                ? "cursor-not-allowed opacity-70"
+                                                : "cursor-pointer hover:bg-base-100"
+                                        }`}
                                     >
-                                        <Edit3 className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                                {isBioEditing && isUpdatingBio && (
-                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                        <span className="text-sm text-base-content">
+                                            {username || (
+                                                <span className="italic opacity-70">
+                                                    Not set
+                                                </span>
+                                            )}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter username"
+                                            className="input input-bordered input-primary w-full flex-grow text-sm focus:outline-none"
+                                            value={username}
+                                            onChange={(e) =>
+                                                setUsername(e.target.value)
+                                            }
+                                            maxLength={30}
+                                            disabled={isUpdatingUsername}
+                                            autoFocus
+                                        />
+                                        <div
+                                            className="tooltip"
+                                            data-tip="Save"
+                                        >
+                                            <button
+                                                className="btn btn-success btn-sm btn-square"
+                                                onClick={handleSaveUsername}
+                                                disabled={
+                                                    isUpdatingUsername ||
+                                                    !username.trim() ||
+                                                    username.trim().length <
+                                                        3 ||
+                                                    username.trim() ===
+                                                        authUser?.fullName
+                                                }
+                                            >
+                                                {isUpdatingUsername ? (
+                                                    <span className="loading loading-spinner loading-xs"></span>
+                                                ) : (
+                                                    <Check className="w-4 h-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <div
+                                            className="tooltip"
+                                            data-tip="Cancel"
+                                        >
+                                            <button
+                                                className="btn btn-error btn-outline btn-sm btn-square"
+                                                onClick={
+                                                    handleCancelUsernameEdit
+                                                }
+                                                disabled={isUpdatingUsername}
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
-                            {!isBioEditing ? (
-                                <p
-                                    className={`px-4 py-2.5 bg-base-200 rounded-lg border min-h-[6rem] whitespace-pre-wrap ${
-                                        bio
-                                            ? "cursor-pointer hover:bg-base-100 transition-colors"
-                                            : "text-zinc-500 italic cursor-pointer hover:bg-base-100 transition-colors"
-                                    }`}
-                                    onClick={() =>
-                                        !isAnyLoading && setIsBioEditing(true)
-                                    }
-                                >
-                                    {bio || "Click to add bio..."}
-                                </p>
-                            ) : (
-                                <div>
-                                    <textarea
-                                        placeholder="Bio"
-                                        className={`textarea textarea-bordered w-full resize-none transition-colors duration-200 ${
-                                            isUpdatingBio
-                                                ? "opacity-60 cursor-not-allowed"
-                                                : "bg-base-100"
-                                        }`}
-                                        maxLength={140}
-                                        value={bio}
-                                        onChange={(e) => setBio(e.target.value)}
-                                        disabled={isUpdatingBio}
-                                    ></textarea>
-                                    <div className="flex justify-end gap-2 mt-2 items-center">
-                                        <span className="text-xs text-zinc-400">
-                                            {bio.length}/140
+
+                            {/* Email Section */}
+                            <div className="flex flex-col space-y-1.5">
+                                <label className="label py-0">
+                                    <span className="label-text text-base-content/70 flex items-center gap-2">
+                                        <Mail className="w-4 h-4" />
+                                        Email Address
+                                    </span>
+                                </label>
+                                <div className="flex items-center px-4 py-2.5 bg-base-200 rounded-lg min-h-[2.5rem] w-full cursor-not-allowed">
+                                    <span className="text-sm text-base-content/80">
+                                        {authUser?.email}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Bio Section */}
+                            <div className="flex flex-col space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="label py-0">
+                                        <span className="label-text text-base-content/70 flex items-center gap-2">
+                                            <MessageSquare className="w-4 h-4" />
+                                            Bio
                                         </span>
-                                        <Button
-                                            className="inline-flex items-center gap-2 rounded-md bg-gray-700 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-inner hover:bg-gray-600 transition-colors duration-300"
-                                            onClick={handleSaveBio}
-                                            disabled={
-                                                isUpdatingBio ||
-                                                bio === (authUser?.bio || "")
-                                            }
+                                    </label>
+                                    {!isBioEditing && (
+                                        <div
+                                            className="tooltip tooltip-left"
+                                            data-tip="Edit Bio"
                                         >
-                                            {isUpdatingBio ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <Check className="w-4 h-4" />
+                                            <button
+                                                className="btn btn-ghost btn-xs p-1 h-auto min-h-0 text-primary"
+                                                onClick={() =>
+                                                    setIsBioEditing(true)
+                                                }
+                                                disabled={isAnyLoading}
+                                            >
+                                                <Edit3 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {!isBioEditing ? (
+                                    <div
+                                        onClick={() =>
+                                            !isAnyLoading &&
+                                            setIsBioEditing(true)
+                                        }
+                                        className={`flex px-4 py-2.5 bg-base-200 rounded-lg min-h-[6rem] w-full text-left whitespace-pre-wrap transition-colors ${
+                                            isAnyLoading
+                                                ? "cursor-not-allowed opacity-70"
+                                                : "cursor-pointer hover:bg-base-100"
+                                        }`}
+                                    >
+                                        <span className="text-sm text-base-content">
+                                            {bio || (
+                                                <span className="italic opacity-70">
+                                                    Click to add bio...
+                                                </span>
                                             )}
-                                            Save Changes
-                                        </Button>
-                                        <Button
-                                            className="inline-flex items-center gap-2 rounded-md bg-error px-3 py-1.5 text-sm/6 font-semibold text-white shadow-inner hover:opacity-70 transition-opacity duration-300"
-                                            onClick={handleCancelBioEdit}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col space-y-2">
+                                        <textarea
+                                            placeholder="Tell us about yourself..."
+                                            className={`textarea textarea-bordered textarea-primary w-full text-sm resize-none focus:outline-none ${
+                                                isUpdatingBio
+                                                    ? "focus:outline-none opacity-70 cursor-not-allowed"
+                                                    : ""
+                                            }`}
+                                            rows={4}
+                                            maxLength={210}
+                                            value={bio}
+                                            onChange={(e) =>
+                                                setBio(e.target.value)
+                                            }
                                             disabled={isUpdatingBio}
-                                        >
-                                            <X className="w-4 h-4" />
-                                            Cancel
-                                        </Button>
+                                            autoFocus
+                                        ></textarea>
+                                        <div className="flex justify-end items-center space-x-2">
+                                            <span className="text-xs text-base-content/60">
+                                                {bio.length}/210
+                                            </span>
+                                            <button
+                                                className="btn btn-success btn-sm"
+                                                onClick={handleSaveBio}
+                                                disabled={
+                                                    isUpdatingBio ||
+                                                    bio ===
+                                                        (authUser?.bio || "")
+                                                }
+                                            >
+                                                {isUpdatingBio ? (
+                                                    <span className="loading loading-spinner loading-xs mr-1"></span>
+                                                ) : (
+                                                    <Check className="w-4 h-4 mr-1" />
+                                                )}
+                                                Save
+                                            </button>
+                                            <button
+                                                className="btn btn-error btn-outline btn-sm"
+                                                onClick={handleCancelBioEdit}
+                                                disabled={isUpdatingBio}
+                                            >
+                                                <X className="w-4 h-4 mr-1" />
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="divider my-4"></div>
+
+                        {/* Account Information Section */}
+                        <div className="flex flex-col space-y-4">
+                            <h2 className="text-lg font-medium text-base-content">
+                                Account Information
+                            </h2>
+                            <div className="bg-base-200 rounded-lg p-4  border-base-content/10">
+                                <div className="flex flex-col space-y-2 text-sm">
+                                    <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-2 text-base-content/70">
+                                            <CalendarDays className="w-4 h-4" />
+                                            Member Since
+                                        </span>
+                                        {/* TODO: fix bag with createdDate */}
+                                        <span className="text-base-content">
+                                            {authUser?.createdAt
+                                                ? new Date(
+                                                      authUser.createdAt
+                                                  ).toLocaleDateString()
+                                                : "Invalid date"}
+                                        </span>
+                                    </div>
+                                    <hr className="border-base-content/10" />
+                                    <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-2 text-base-content/70">
+                                            <BadgeCheck className="w-4 h-4" />
+                                            Account Status
+                                        </span>
+                                        <div className="badge badge-success badge-outline animate-pulse">
+                                            Active
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                    {/* --- Секция Account Information --- */}
-                    <div className="mt-6 bg-base-200 rounded-xl p-6">
-                        <h2 className="text-lg font-medium mb-4">
-                            Account Information
-                        </h2>
-                        <div className="space-y-3 text-sm">
-                            <div className="flex items-center justify-between py-2 border-b border-zinc-700">
-                                <span>Member Since</span>
-                                <span>
-                                    {authUser?.createdAt?.split("T")[0]}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between py-2">
-                                <span>Account Status</span>
-                                <span className="text-green-500 animate-bounce">
-                                    Active
-                                </span>
                             </div>
                         </div>
                     </div>

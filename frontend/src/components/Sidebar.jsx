@@ -1,12 +1,15 @@
-import React, { useEffect } from "react"; // Добавили useEffect
-import { Users } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { MessageSquare } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import UserSearch from "./search/UserSearch";
 import useChatStore from "../store/useChatStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 
+const MIN_WIDTH_LG = 200;
+const MAX_WIDTH_LG = 500;
+const DEFAULT_WIDTH_LG = 288;
+
 function SideBar() {
-    // Получаем новые состояния и функцию
     const {
         conversationPartners,
         isContactsLoading,
@@ -16,92 +19,164 @@ function SideBar() {
     } = useChatStore();
     const { onlineUsers, authUser } = useAuthStore();
 
-    // Загружаем контакты при монтировании
+    const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH_LG);
+    const isResizing = useRef(false);
+    const sidebarRef = useRef(null);
+    const [isMobileWidth, setIsMobileWidth] = useState(
+        window.innerWidth < 1024
+    ); // Состояние для ширины
+
+    // Обновляем isMobileWidth при изменении размера окна
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobileWidth(window.innerWidth < 1024);
+        };
+        window.addEventListener("resize", handleResize);
+        handleResize();
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     useEffect(() => {
         fetchConversationPartners();
-    }, [fetchConversationPartners]); // Зависимость от самой функции
+    }, [fetchConversationPartners]);
 
-    // Считаем онлайн только среди conversationPartners
     const onlineContacts = conversationPartners.filter(
         (partner) =>
             onlineUsers.includes(partner._id) && partner._id !== authUser?._id
     );
     const onlineCount = onlineContacts.length;
 
-    return (
-        <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
-            {/* Блок поиска */}
-            <div className="border-b border-base-300 w-full p-2">
-                <UserSearch />
-            </div>
+    const startResizing = useCallback((mouseDownEvent) => {
+        // Ресайз работает только если не мобильная или планшетная ширина
+        if (window.innerWidth >= 1024) {
+            isResizing.current = true;
+            mouseDownEvent.preventDefault();
+            window.addEventListener("mousemove", resize);
+            window.addEventListener("mouseup", stopResizing);
+            document.body.style.cursor = "col-resize";
+            document.body.style.userSelect = "none";
+        }
+    }, []);
 
-            {/* Блок "Contacts" */}
-            <div className="border-b border-base-300 w-full p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Users className="size-5" />
-                    <span className="font-medium hidden lg:block text-sm">
-                        Contacts
+    const stopResizing = useCallback(() => {
+        if (isResizing.current) {
+            isResizing.current = false;
+            window.removeEventListener("mousemove", resize);
+            window.removeEventListener("mouseup", stopResizing);
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+        }
+    }, []);
+    const resize = useCallback((mouseMoveEvent) => {
+        if (isResizing.current && sidebarRef.current) {
+            const currentWidth =
+                mouseMoveEvent.clientX -
+                sidebarRef.current.getBoundingClientRect().left;
+            const newWidth = Math.max(
+                MIN_WIDTH_LG,
+                Math.min(currentWidth, MAX_WIDTH_LG)
+            );
+            setSidebarWidth(newWidth);
+        }
+    }, []);
+
+    const memoizedStartResizing = useCallback(startResizing, [
+        resize,
+        stopResizing,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            stopResizing();
+        };
+    }, [stopResizing]);
+
+    return (
+        <aside
+            ref={sidebarRef}
+            className={`h-full border-r border-base-300 flex flex-col flex-shrink-0 bg-base-100 lg:rounded-l-lg relative transition-none ${
+                selectedUser ? "hidden lg:flex" : "flex w-full lg:w-auto"
+            }`} // w-full применяется до lg
+            // Применяем ширину: 100% если isMobileWidth, иначе динамическую sidebarWidth
+            style={{ width: isMobileWidth ? "100%" : `${sidebarWidth}px` }}
+        >
+            <div className="flex flex-col h-full overflow-hidden">
+                <div className="p-2 border-b border-base-300 flex-shrink-0">
+                    <UserSearch />
+                </div>
+
+                <div className="p-3 border-b border-base-300 flex items-center justify-between flex-shrink-0">
+                    <div className="flex items-center gap-2 text-base-content/80 overflow-hidden">
+                        <MessageSquare className="w-5 h-5 flex-shrink-0" />
+                        <span className="fext-lg font-semibold">All Chats</span>
+                    </div>
+                    <span
+                        className={`text-xs text-green-500 inline ${
+                            onlineCount > 0 ? "text-success" : ""
+                        }`}
+                    >
+                        {onlineCount} online
                     </span>
                 </div>
-                <span
-                    className={`text-xs hidden lg:inline ${
-                        onlineCount > 0 ? "text-success" : "text-zinc-500"
-                    }`}
-                >
-                    ({onlineCount} online)
-                </span>
+
+                <div className="flex-1 overflow-y-auto py-1">
+                    {isContactsLoading ? (
+                        <SidebarSkeleton count={5} />
+                    ) : conversationPartners.length > 0 ? (
+                        conversationPartners.map((partner) => (
+                            <button
+                                key={partner._id}
+                                onClick={() => setSelectedUser(partner)}
+                                className={`w-full p-2 lg:p-3 flex items-center gap-3 hover:bg-base-300 focus:bg-base-300 outline-none transition-colors duration-150 ${
+                                    selectedUser?._id === partner._id
+                                        ? "bg-base-300"
+                                        : ""
+                                } `}
+                            >
+                                <div
+                                    className={`avatar ${
+                                        onlineUsers.includes(partner._id)
+                                            ? "online"
+                                            : "offline"
+                                    } flex-shrink-0`}
+                                >
+                                    <div className="w-10 rounded-full">
+                                        <img
+                                            src={
+                                                partner.profilePic ||
+                                                "/avatar.png"
+                                            }
+                                            alt={partner.fullName}
+                                        />
+                                    </div>
+                                </div>
+                                {/* Детали видны всегда */}
+                                <div className="text-left min-w-0 flex-1">
+                                    <div className="font-medium truncate text-sm text-base-content">
+                                        {partner.fullName}
+                                    </div>
+                                    <div className="text-xs text-base-content/60">
+                                        {onlineUsers.includes(partner._id)
+                                            ? "Online"
+                                            : "Offline"}
+                                    </div>
+                                </div>
+                            </button>
+                        ))
+                    ) : (
+                        <div className="text-center text-xs text-base-content/50 py-4 px-2 block">
+                            Search for users to start chatting.
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* --- ИЗМЕНЕНО: Отображаем список conversationPartners или скелетон/сообщение --- */}
-            <div className="flex-1 overflow-y-auto w-full py-1">
-                {isContactsLoading ? (
-                    <SidebarSkeleton count={3} /> // Показываем скелетон во время загрузки
-                ) : conversationPartners.length > 0 ? (
-                    conversationPartners.map((partner) => (
-                        <button
-                            key={partner._id}
-                            onClick={() => setSelectedUser(partner)}
-                            className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors duration-200 ${
-                                selectedUser?._id === partner._id
-                                    ? "bg-base-300"
-                                    : ""
-                            } `}
-                        >
-                            <div className="relative mx-auto lg:mx-0">
-                                <img
-                                    src={partner.profilePic || "/avatar.png"}
-                                    alt={partner.fullName}
-                                    className="size-10 object-cover rounded-full"
-                                />
-                                {onlineUsers.includes(partner._id) && (
-                                    <span className="absolute bottom-0 right-0 size-2.5 bg-green-500 rounded-full ring-1 ring-base-100" />
-                                )}
-                            </div>
-                            <div className="hidden lg:block text-left min-w-0">
-                                <div className="font-medium truncate text-sm">
-                                    {partner.fullName}
-                                </div>
-                                <div className="text-xs text-zinc-400">
-                                    {onlineUsers.includes(partner._id)
-                                        ? "Online"
-                                        : "Offline"}
-                                </div>
-                            </div>
-                        </button>
-                    ))
-                ) : (
-                    // Сообщение, если список контактов пуст ПОСЛЕ загрузки
-                    <div className="text-center text-xs text-zinc-500 py-4 px-2 hidden lg:block">
-                        Search for users and send a message to add them here.
-                    </div>
-                )}
-                {/* Сообщение для мобильной версии, если список пуст */}
-                {!isContactsLoading && conversationPartners.length === 0 && (
-                    <div className="text-center text-xs text-zinc-500 py-4 px-2 lg:hidden">
-                        Search users
-                    </div>
-                )}
-            </div>
+            {/* Ручка ресайза видна только на lg+ */}
+            <div
+                className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize bg-transparent hover:bg-primary/20 active:bg-primary/30 transition-colors duration-150 z-10 hidden lg:block"
+                onMouseDown={memoizedStartResizing}
+                title="Resize sidebar"
+            />
         </aside>
     );
 }

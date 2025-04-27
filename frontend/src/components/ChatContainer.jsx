@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-
 import useChatStore from "../store/useChatStore";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -8,23 +7,18 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
 function ChatContainer() {
-    const {
-        messages,
-        // getMessages, // Не получаем напрямую, вызываем через getState или селектор
-        isMessagesLoading,
-        selectedUser,
-        // subscribeToMessages, // Не получаем напрямую
-        // unsubscribeFromMessages, // Не получаем напрямую
-    } = useChatStore();
+    const { messages, isMessagesLoading, selectedUser } = useChatStore();
 
     const { authUser } = useAuthStore();
-    const messageEndRef = useRef(null); // Ref для скролла
+    const messageEndRef = useRef(null);
 
     useEffect(() => {
         if (selectedUser?._id) {
             useChatStore.getState().getMessages(selectedUser._id);
             const unsubscribe = useChatStore.getState().subscribeToMessages();
             return unsubscribe;
+        } else {
+            useChatStore.setState({ messages: [], isMessagesLoading: false });
         }
         // Если selectedUser сбрасывается, можно добавить логику очистки сообщений здесь
         // else {
@@ -34,31 +28,23 @@ function ChatContainer() {
 
     // Эффект для скролла к последнему сообщению
     useEffect(() => {
-        if (messageEndRef.current) {
-            setTimeout(() => {
-                messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-            }, 50);
-        }
-    }, [messages]); // Зависимость от массива сообщений
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
-    // Рендер скелетона во время загрузки
-    if (isMessagesLoading) {
-        return (
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <ChatHeader />
-                <div className="flex-1 overflow-y-auto p-4">
-                    <MessageSkeleton />
-                </div>
-                <MessageInput />
-            </div>
-        );
-    }
-
-    // Основной рендер чата
-    return (
+    const renderLoading = () => (
         <div className="flex-1 flex flex-col overflow-hidden">
             <ChatHeader />
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4">
+                <MessageSkeleton count={5} />
+            </div>
+            <MessageInput />
+        </div>
+    );
+
+    const renderChat = () => (
+        <div className="flex-1 flex flex-col overflow-hidden bg-base-100 lg:bg-base-200 md:rounded-r-lg">
+            <ChatHeader />
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
                 {messages.map((message) => (
                     <div
                         key={message._id}
@@ -69,7 +55,7 @@ function ChatContainer() {
                         }`}
                     >
                         <div className="chat-image avatar">
-                            <div className="size-10 rounded-full border">
+                            <div className="w-8 md:w-10 rounded-full">
                                 <img
                                     src={
                                         message.senderId === authUser?._id
@@ -82,31 +68,37 @@ function ChatContainer() {
                                 />
                             </div>
                         </div>
-                        <div className="chat-header mb-1">
-                            <time className="text-xs opacity-50 ml-1">
-                                {message.createdAt
-                                    ? formatMessageTime(message.createdAt)
-                                    : "..."}
-                            </time>
-                        </div>
-                        <div className="chat-bubble flex flex-col">
+                        <div className="chat-bubble flex flex-col max-w-xs md:max-w-md lg:max-w-lg">
                             {message.image && (
                                 <img
                                     src={message.image}
                                     alt="Attachment"
-                                    className="sm:max-w-[200px] rounded-md mb-2"
+                                    className="max-w-[200px] md:max-w-[250px] rounded-md mb-1.5 cursor-pointer"
+                                    onClick={() =>
+                                        window.open(message.image, "_blank")
+                                    }
                                 />
                             )}
-                            {message.text && <p>{message.text}</p>}
+                            {message.text && (
+                                <p className="text-sm break-words whitespace-pre-wrap">
+                                    {message.text}
+                                </p>
+                            )}
+                        </div>
+                        <div className="chat-footer opacity-50 text-xs mt-1">
+                            {message.createdAt
+                                ? formatMessageTime(message.createdAt)
+                                : "..."}
                         </div>
                     </div>
                 ))}
-                {/* Пустой div для стабильного скролла */}
-                <div ref={messageEndRef} />
+                <div ref={messageEndRef} className="h-0" />
             </div>
             <MessageInput />
         </div>
     );
+
+    return isMessagesLoading ? renderLoading() : renderChat();
 }
 
 export default ChatContainer;

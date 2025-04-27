@@ -1,39 +1,60 @@
-import { X } from "lucide-react";
+import { X, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
 const ChatHeader = () => {
     const { selectedUser, setSelectedUser } = useChatStore();
     const { onlineUsers } = useAuthStore();
+    const isOnline = onlineUsers.includes(selectedUser._id);
+
+    if (!selectedUser) return null;
 
     return (
-        <div className="p-2.5 border-b border-base-300">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="avatar">
-                        <div className="size-10 rounded-full relative">
-                            <img
-                                src={selectedUser.profilePic || "/avatar.png"}
-                                alt={selectedUser.fullName}
-                            />
-                        </div>
-                    </div>
+        <div className="flex items-center justify-between p-3 border-b border-base-300 bg-base-100 lg:bg-base-200 md:rounded-tr-lg flex-shrink-0">
+            <div className="flex items-center gap-3">
+                {/* Кнопка Назад видна только до lg */}
+                <button
+                    className="btn btn-ghost btn-circle btn-sm lg:hidden"
+                    onClick={() => setSelectedUser(null)}
+                    aria-label="Back to chats"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                </button>
 
-                    {/* User info */}
-                    <div>
-                        <h3 className="font-medium">{selectedUser.fullName}</h3>
-                        <p className="text-sm text-base-content/70">
-                            {onlineUsers.includes(selectedUser._id)
-                                ? "Online"
-                                : "Offline"}
-                        </p>
+                <div className={`avatar ${isOnline ? "online" : "offline"}`}>
+                    <div className="w-10 rounded-full">
+                        <img
+                            src={selectedUser.profilePic || "/avatar.png"}
+                            alt={selectedUser.fullName}
+                        />
                     </div>
                 </div>
 
-                {/* Close button */}
-                <button onClick={() => setSelectedUser(null)}>
-                    <X />
+                <div>
+                    <h3 className="font-medium text-base-content text-sm md:text-base">
+                        {selectedUser.fullName}
+                    </h3>
+                    <p
+                        className={`text-xs ${
+                            isOnline ? "text-success" : "text-base-content/60"
+                        }`}
+                    >
+                        {isOnline ? "Online" : "Offline"}
+                    </p>
+                </div>
+            </div>
+
+            {/* Кнопка Закрыть видна только на lg+ */}
+            <div
+                className="tooltip tooltip-left hidden lg:block"
+                data-tip="Close chat"
+            >
+                <button
+                    className="btn btn-ghost btn-circle btn-sm"
+                    onClick={() => setSelectedUser(null)}
+                    aria-label="Close chat"
+                >
+                    <X className="w-5 h-5" />
                 </button>
             </div>
         </div>

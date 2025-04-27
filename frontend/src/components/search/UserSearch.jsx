@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { axiosInstance } from "../../lib/axios";
-import toast from "react-hot-toast";
 import UserListItem from "./UserListItem";
 import debounce from "lodash.debounce";
+import SearchSkeleton from "../skeletons/SidebarSkeleton";
 
 const UserSearch = () => {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showResults, setShowResults] = useState(false);
+    const searchContainerRef = useRef(null);
 
     const performSearch = async (searchQuery) => {
         const trimmedQuery = searchQuery.trim();
@@ -17,15 +19,18 @@ const UserSearch = () => {
             setResults([]);
             setIsLoading(false);
             setError(null);
+            setShowResults(false);
             return;
         }
         setIsLoading(true);
         setError(null);
+
         try {
             const res = await axiosInstance.get(
                 `/users/search?q=${encodeURIComponent(trimmedQuery)}`
             );
             setResults(res.data);
+            setShowResults(true);
         } catch (err) {
             const errorMessage =
                 err.response?.data?.message || "Failed to search users";
@@ -33,6 +38,7 @@ const UserSearch = () => {
             toast.error(errorMessage);
 
             setResults([]);
+            setShowResults(true);
         } finally {
             setIsLoading(false);
         }
@@ -51,59 +57,79 @@ const UserSearch = () => {
         setResults([]);
         setError(null);
         setIsLoading(false);
+        setShowResults(false);
         debouncedSearchRef.current.cancel();
     };
 
     useEffect(() => {
-        const debouncedFunc = debouncedSearchRef.current;
+        const handleClickOutside = (event) => {
+            if (
+                searchContainerRef.current &&
+                !searchContainerRef.current.contains(event.target)
+            ) {
+                setShowResults(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
         return () => {
-            debouncedFunc.cancel();
+            document.removeEventListener("mousedown", handleClickOutside);
+            debouncedSearchRef.current.cancel();
         };
     }, []);
 
     return (
-        <div className="p-1 space-y-2">
+        <div className="relative" ref={searchContainerRef}>
             <div className="form-control">
-                <div className="input-group flex justify-center marker:">
+                <label className="input input-sm flex items-center gap-2 h-9 border border-base-300 rounded-lg bg-base-100 focus-within:outline-none transition-colors duration-200 w-full">
+                    <Search className="w-4 h-4 opacity-70" />
                     <input
                         type="text"
-                        placeholder="Search…"
-                        className="input input-bordered w-full input-sm"
+                        placeholder="Search users..."
+                        className="grow bg-transparent text-sm focus:outline-none"
                         value={query}
                         onChange={handleInputChange}
+                        onFocus={() => query.trim() && setShowResults(true)}
                     />
-                    <button type="button" className="btn btn-square btn-sm">
-                        {/* Кнопка справа */}
-                        {isLoading ? (
-                            <Loader2 className="animate-spin h-4 w-4" />
-                        ) : query ? (
-                            <X
-                                className="h-4 w-4 cursor-pointer hover:text-error"
-                                onClick={clearSearch}
-                            />
-                        ) : (
-                            <Search className="h-4 w-4" />
-                        )}
-                    </button>
-                </div>
+                    {isLoading ? (
+                        <span className="loading loading-spinner loading-xs opacity-70"></span>
+                    ) : query ? (
+                        <button
+                            type="button"
+                            className="btn btn-ghost btn-circle btn-xs p-0 m-0 h-auto min-h-0"
+                            onClick={clearSearch}
+                            aria-label="Clear search"
+                        >
+                            <X className="w-4 h-4 opacity-70 hover:text-error" />
+                        </button>
+                    ) : null}
+                </label>
             </div>
-            {error && <p className="text-error text-sm px-1">{error}</p>}
-            {/* Результаты поиска */}
-            {results.length > 0 && !isLoading && (
-                <ul className="mt-2 space-y-1 max-h-48 overflow-y-auto">
-                    {results.map((user) => (
-                        <UserListItem
-                            key={user._id}
-                            user={user}
-                            onUserSelect={clearSearch}
-                        />
-                    ))}
-                </ul>
-            )}
-            {!isLoading && !error && query.trim() && results.length === 0 && (
-                <p className="text-center text-xs text-gray-500 pt-2">
-                    No users found
-                </p>
+
+            {showResults && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-2">
+                    {isLoading ? (
+                        <SearchSkeleton count={3} />
+                    ) : error ? (
+                        <p className="text-error text-xs text-center p-2">
+                            {error}
+                        </p>
+                    ) : results.length > 0 ? (
+                        <ul className="space-y-1">
+                            {results.map((user) => (
+                                <UserListItem
+                                    key={user._id}
+                                    user={user}
+                                    onUserSelect={clearSearch}
+                                />
+                            ))}
+                        </ul>
+                    ) : query.trim() ? (
+                        <p className="text-center text-xs text-base-content/50 p-2">
+                            No users found
+                        </p>
+                    ) : null}
+                </div>
             )}
         </div>
     );

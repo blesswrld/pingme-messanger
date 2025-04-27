@@ -1,4 +1,5 @@
 import daisyui from "daisyui";
+import mantine from "@mantine/core";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -6,7 +7,7 @@ export default {
     theme: {
         extend: {},
     },
-    plugins: [daisyui],
+    plugins: [daisyui, mantine],
 
     daisyui: {
         themes: ["light", "dark"],

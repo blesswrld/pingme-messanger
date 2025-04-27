@@ -6,7 +6,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 
 export const signup = async (req, res) => {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, bio } = req.body;
     try {
         if (!fullName || !email || !password) {
             return res.status(400).json({ message: "All fields are required" });
@@ -194,10 +194,10 @@ export const updateProfile = async (req, res) => {
                     return res
                         .status(400)
                         .json({ message: "Bio must be a string." });
-                if (bio.length > 140)
+                if (bio.length > 210)
                     return res
                         .status(400)
-                        .json({ message: "Bio cannot exceed 140 characters." });
+                        .json({ message: "Bio cannot exceed 210 characters." });
                 updateData.bio = bio;
             } else {
                 console.log(

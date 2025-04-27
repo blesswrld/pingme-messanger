@@ -1,6 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import {
+    LogOut,
+    MessageSquareText,
+    Settings,
+    User,
+    Sun,
+    Moon,
+    Menu,
+    X,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import useThemeStore from "../store/useThemeStore";
 import useChatStore from "../store/useChatStore";
@@ -9,6 +18,7 @@ const Navbar = () => {
     const { logout, authUser } = useAuthStore();
     const { theme, setTheme } = useThemeStore();
     const { setSelectedUser } = useChatStore();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
@@ -20,102 +30,167 @@ const Navbar = () => {
     };
 
     const handleLogoClick = () => {
-        setSelectedUser(null); // Сбрасываем выбранного пользователя
+        setSelectedUser(null);
+        setIsMenuOpen(false);
+    };
+
+    const toggleMenu = () => {
+        setIsMenuOpen((prev) => !prev);
     };
 
     return (
-        <header className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 backdrop-blur-lg bg-base-100/80">
-            <div className="container mx-auto px-4 h-16">
-                <div className="flex items-center justify-between h-full">
-                    <div className="flex items-center gap-8">
-                        <Link
-                            to="/"
-                            className="w-9 h-9 rounded-lg bg-primary/100 flex items-center justify-center"
-                            onClick={handleLogoClick} // Добавляем onClick
+        <div className="navbar bg-base-100 border-b border-base-300 fixed top-0 z-40 h-16 min-h-16 backdrop-blur-lg bg-opacity-80">
+            <div className="navbar-start">
+                <Link
+                    to="/"
+                    className="btn btn-ghost text-xl font-bold text-primary gap-2"
+                    onClick={handleLogoClick}
+                >
+                    <MessageSquareText className="w-6 h-6" />
+                    PingMe
+                </Link>
+            </div>
+
+            {/* Элементы навигации для десктопа */}
+            <div className="navbar-end hidden md:flex gap-2 lg:gap-4 items-center">
+                <label className="flex cursor-pointer gap-2 items-center p-2 rounded-lg hover:bg-base-200 transition-colors">
+                    <Sun
+                        className={`w-5 h-5 ${
+                            theme === "light"
+                                ? "text-primary"
+                                : "text-base-content/70"
+                        }`}
+                    />
+                    <input
+                        type="checkbox"
+                        className="toggle toggle-primary toggle-sm"
+                        checked={theme === "dark"}
+                        onChange={toggleTheme}
+                        aria-label="Toggle theme"
+                    />
+                    <Moon
+                        className={`w-5 h-5 ${
+                            theme === "dark"
+                                ? "text-primary"
+                                : "text-base-content/70"
+                        }`}
+                    />
+                </label>
+
+                <div className="tooltip tooltip-bottom" data-tip="Settings">
+                    <Link to={"/settings"} className="btn btn-ghost btn-circle">
+                        <Settings className="w-5 h-5" />
+                    </Link>
+                </div>
+
+                {authUser && (
+                    <>
+                        <div
+                            className="tooltip tooltip-bottom"
+                            data-tip="Profile"
                         >
-                            <div className="w-9 h-9 rounded-lg bg-primary/100 flex items-center justify-center">
-                                <MessageSquare className="w-5 h-5 text-primary" />
-                            </div>
-                            <h1 className="text-lg font-bold">PingMe</h1>
-                        </Link>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="flex cursor-pointer gap-2 items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
+                            <Link
+                                to={"/profile"}
+                                className="btn btn-ghost btn-circle"
                             >
-                                <circle cx="12" cy="12" r="5" />
-                                <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-                            </svg>
+                                <User className="w-5 h-5" />
+                            </Link>
+                        </div>
+
+                        <div
+                            className="tooltip tooltip-bottom"
+                            data-tip="Logout"
+                        >
+                            <button
+                                className="btn btn-ghost btn-circle"
+                                onClick={logout}
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Бургер-меню для мобильных устройств */}
+            <div className="navbar-end md:hidden">
+                <button
+                    className="btn btn-ghost btn-circle"
+                    onClick={toggleMenu}
+                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                >
+                    {isMenuOpen ? (
+                        <X className="w-6 h-6" />
+                    ) : (
+                        <Menu className="w-6 h-6" />
+                    )}
+                </button>
+            </div>
+
+            {/* Мобильное меню */}
+            {isMenuOpen && (
+                <div className="absolute top-16 left-0 right-0 bg-base-100 border-b border-base-300 shadow-md md:hidden">
+                    <div className="flex flex-col p-4 gap-3">
+                        <label className="flex cursor-pointer gap-2 items-center p-2 rounded-lg hover:bg-base-200 transition-colors">
+                            <Sun
+                                className={`w-5 h-5 ${
+                                    theme === "light"
+                                        ? "text-primary"
+                                        : "text-base-content/70"
+                                }`}
+                            />
                             <input
                                 type="checkbox"
-                                className="toggle toggle-sm"
+                                className="toggle toggle-primary toggle-sm"
                                 checked={theme === "dark"}
                                 onChange={toggleTheme}
+                                aria-label="Toggle theme"
                             />
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg>
+                            <Moon
+                                className={`w-5 h-5 ${
+                                    theme === "dark"
+                                        ? "text-primary"
+                                        : "text-base-content/70"
+                                }`}
+                            />
                         </label>
 
                         <Link
                             to={"/settings"}
-                            className={`btn btn-sm gap-2 transition-colors`}
+                            className="btn btn-ghost justify-start gap-2"
+                            onClick={toggleMenu}
                         >
-                            <Settings className="w-4 h-4" />
-                            <span className="hidden sm:inline">Settings</span>
+                            <Settings className="w-5 h-5" />
+                            Settings
                         </Link>
 
                         {authUser && (
                             <>
                                 <Link
                                     to={"/profile"}
-                                    className={`btn btn-sm gap-2`}
+                                    className="btn btn-ghost justify-start gap-2"
+                                    onClick={toggleMenu}
                                 >
-                                    <User className="size-5" />
-                                    <span className="hidden sm:inline">
-                                        Profile
-                                    </span>
+                                    <User className="w-5 h-5" />
+                                    Profile
                                 </Link>
 
                                 <button
-                                    className="flex gap-2 items-center"
-                                    onClick={logout}
+                                    className="btn btn-ghost justify-start gap-2"
+                                    onClick={() => {
+                                        logout();
+                                        toggleMenu();
+                                    }}
                                 >
-                                    <Link
-                                        to={"/login"}
-                                        className={`btn btn-sm gap-2`}
-                                    >
-                                        <LogOut className="size-5" />
-                                        <span className="hidden sm:inline">
-                                            Logout
-                                        </span>
-                                    </Link>
+                                    <LogOut className="w-5 h-5" />
+                                    Logout
                                 </button>
                             </>
                         )}
                     </div>
                 </div>
-            </div>
-        </header>
+            )}
+        </div>
     );
 };
 
