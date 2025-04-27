@@ -239,7 +239,7 @@ const LoginPage = () => {
 
                     <div className="text-center mt-4">
                         <p className="text-base-content/60">
-                            Don't have an account?
+                            Don't have an account?{" "}
                             <Link
                                 to="/signup"
                                 className="link link-primary hover:opacity-70 transition-opacity duration-200"
@@ -257,7 +257,7 @@ const LoginPage = () => {
                         </div>
                         <div className="collapse-content text-sm">
                             Click the "Create account" link above or continue
-                            with Google or GitHub account
+                            with Google or GitHub account.
                         </div>
                     </div>
                 </div>

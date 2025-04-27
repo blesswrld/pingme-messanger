@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.2",
+    "@mantine/core": "^7.17.5",
+    "@mantine/hooks": "^7.17.5",
     "axios": "^1.8.4",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.503.0",

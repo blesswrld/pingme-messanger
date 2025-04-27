@@ -11,6 +11,8 @@ import {
     MessageSquare,
 } from "lucide-react"; // Убедись, что Check импортирован
 import toast from "react-hot-toast";
+import { Button } from "@headlessui/react";
+import { Group, TextInput, NumberInput, Button as BTN } from "@mantine/core";
 
 const ProfilePage = () => {
     const {
@@ -155,9 +157,6 @@ const ProfilePage = () => {
                                         <Edit3 className="w-3.5 h-3.5" />
                                     </button>
                                 )}
-                                {isUsernameEditing && isUpdatingUsername && (
-                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                )}
                             </div>
                             {!isUsernameEditing ? (
                                 <p
@@ -266,8 +265,8 @@ const ProfilePage = () => {
                                         <span className="text-xs text-zinc-400">
                                             {bio.length}/140
                                         </span>
-                                        <button
-                                            className="btn btn-success btn-sm btn-square"
+                                        <Button
+                                            className="inline-flex items-center gap-2 rounded-md bg-gray-700 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-inner hover:bg-gray-600 transition-colors duration-300"
                                             onClick={handleSaveBio}
                                             disabled={
                                                 isUpdatingBio ||
@@ -279,14 +278,16 @@ const ProfilePage = () => {
                                             ) : (
                                                 <Check className="w-4 h-4" />
                                             )}
-                                        </button>
-                                        <button
-                                            className="btn btn-error btn-sm btn-square btn-outline"
+                                            Save Changes
+                                        </Button>
+                                        <Button
+                                            className="inline-flex items-center gap-2 rounded-md bg-error px-3 py-1.5 text-sm/6 font-semibold text-white shadow-inner hover:opacity-70 transition-opacity duration-300"
                                             onClick={handleCancelBioEdit}
                                             disabled={isUpdatingBio}
                                         >
                                             <X className="w-4 h-4" />
-                                        </button>
+                                            Cancel
+                                        </Button>
                                     </div>
                                 </div>
                             )}
