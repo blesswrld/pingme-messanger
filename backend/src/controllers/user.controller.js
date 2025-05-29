@@ -4,6 +4,14 @@ import User from "../modules/user.model.js";
 export const searchUsers = async (req, res) => {
     try {
         const searchQuery = req.query.q;
+
+        // Добавим проверку на req.user и req.user._id здесь тоже для единообразия
+        if (!req.user || !req.user._id) {
+            console.error(
+                "searchUsers: User not authenticated or user ID missing."
+            );
+            return res.status(401).json({ message: "User not authenticated." });
+        }
         const currentUserId = req.user._id;
 
         if (!searchQuery) {
@@ -12,7 +20,7 @@ export const searchUsers = async (req, res) => {
 
         const users = await User.find({
             fullName: { $regex: searchQuery, $options: "i" },
-            _id: { $ne: currentUserId },
+            _id: { $ne: currentUserId }, // Исключаем текущего пользователя из поиска
         }).select("fullName profilePic _id");
 
         res.status(200).json(users);
@@ -24,20 +32,34 @@ export const searchUsers = async (req, res) => {
 
 export const getConversationPartners = async (req, res) => {
     try {
+        // Проверка аутентификации пользователя
+        if (!req.user || !req.user._id) {
+            console.error(
+                "getConversationPartners: User not authenticated or user ID missing."
+            );
+            return res.status(401).json({ message: "User not authenticated." });
+        }
         const currentUserId = req.user._id;
-
+        const currentUserIdStr = currentUserId.toString();
         // 1. Находим все сообщения, где текущий пользователь - отправитель или получатель
         const messages = await Message.find({
             $or: [{ senderId: currentUserId }, { receiverId: currentUserId }],
-        }).select("senderId receiverId");
+        })
+            .select("senderId receiverId")
+            .lean(); // .lean() для производительности
 
         // 2. Собираем уникальные ID собеседников
         const partnersIds = new Set();
         messages.forEach((msg) => {
-            if (msg.senderId.toString() !== currentUserId.toString()) {
+            // Проверяем senderId: существует ли и не является ли ID текущего пользователя
+            if (msg.senderId && msg.senderId.toString() !== currentUserIdStr) {
                 partnersIds.add(msg.senderId.toString());
             }
-            if (msg.receiverId.toString() !== currentUserId.toString()) {
+            // Проверяем receiverId: существует ли и не является ли ID текущего пользователя
+            if (
+                msg.receiverId &&
+                msg.receiverId.toString() !== currentUserIdStr
+            ) {
                 partnersIds.add(msg.receiverId.toString());
             }
         });
@@ -45,15 +67,24 @@ export const getConversationPartners = async (req, res) => {
         // 3. Преобразуем Set в массив ID
         const uniquePartnerIds = Array.from(partnersIds);
 
+        // Если нет ID партнеров, возвращаем пустой массив
+        if (uniquePartnerIds.length === 0) {
+            return res.status(200).json([]);
+        }
+
         // 4. Находим полные данные пользователей по этим ID
         const partners = await User.find({
             _id: { $in: uniquePartnerIds },
-        }).select("fullName profilePic _id");
+        })
+            .select("fullName profilePic _id")
+            .lean(); // .lean() для производительности
+
         res.status(200).json(partners);
     } catch (error) {
         console.error(
             "Error in getConversationPartners controller:",
-            error.message
+            error.message,
+            error.stack
         );
         res.status(500).json({ message: "Internal Server error" });
     }

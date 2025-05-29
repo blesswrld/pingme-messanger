@@ -1,0 +1,25 @@
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{0}: reset: moving to 5c6eab8703d9029f4b6f54e14a73a1f7517e839f
+[33m102f3d3[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mbackup-branch-[m[33m)[m HEAD@{1}: checkout: moving from main to 102f3d362c433b39fec498f0336458677595d64c
+[33m102f3d3[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mbackup-branch-[m[33m)[m HEAD@{2}: checkout: moving from 102f3d362c433b39fec498f0336458677595d64c to main
+[33m102f3d3[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mbackup-branch-[m[33m)[m HEAD@{3}: checkout: moving from main to 102f3d362c433b39fec498f0336458677595d64c
+[33m102f3d3[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mbackup-branch-[m[33m)[m HEAD@{4}: commit: update styles
+[33m7279923[m HEAD@{5}: merge recover-profile-work: Fast-forward
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{6}: checkout: moving from recover-profile-work to main
+[33m7279923[m HEAD@{7}: checkout: moving from main to recover-profile-work
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{8}: reset: moving to HEAD
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{9}: checkout: moving from main to main
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{10}: checkout: moving from 72799238470a2149e8de751eb6d32da14d4d5f08 to main
+[33m7279923[m HEAD@{11}: commit: upgrade interface almost in each page, fix backend bags, add new styles and so on
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{12}: checkout: moving from main to 5c6eab8703d9029f4b6f54e14a73a1f7517e839f
+[33m5c6eab8[m[33m ([m[1;36mHEAD[m[33m)[m HEAD@{13}: commit: update styles
+[33m4810308[m HEAD@{14}: commit: Implement user search, create dynamic contact list and so on
+[33m4265e2a[m HEAD@{15}: commit: add updateUsername method, improve updateBio method, fix some bags and so on
+[33mdcea5cc[m HEAD@{16}: commit (amend): add bio field to User schema, update styles and so on
+[33mf2542d4[m HEAD@{17}: commit: add bio field to User schema
+[33me516528[m HEAD@{18}: commit: Implementing Socket.io & add messages in real time
+[33md2891a7[m HEAD@{19}: commit: update some styles add toggleTheme button
+[33ma37ebc4[m HEAD@{20}: commit: add HomePage-ChatContainer component
+[33m92148ab[m HEAD@{21}: commit: add HomePage and Sidebar component
+[33m2c0d82f[m HEAD@{22}: commit (amend): create structure of project. add login, signup, profile, settings pages. on backend add data base, routes and so on
+[33mf1d3715[m HEAD@{23}: commit (amend): create structure of project. add login, signup, profile pages. add data base on backend and so on
+[33m6fbe0a8[m HEAD@{24}: commit (initial): create structure of project. addlogin, signup, profile pages. add data base on backend and so on

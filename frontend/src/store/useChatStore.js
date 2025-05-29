@@ -23,7 +23,7 @@ export const useChatStore = create((set, get) => ({
             const errorMessage =
                 error.response?.data?.message || "Failed to load contacts";
             toast.error(errorMessage);
-            set({ conversationPartners: [] });
+            set({ conversationPartners: [] }); // В случае ошибки сбрасываем в пустой массив
         } finally {
             set({ isContactsLoading: false });
         }
@@ -134,9 +134,9 @@ export const useChatStore = create((set, get) => ({
             // Обновляем список контактов при получении от нового юзера
             const senderId = newMessage.senderId;
             const myId = useAuthStore.getState().authUser?._id;
-            if (senderId !== myId) {
+            if (myId && senderId && senderId.toString() !== myId.toString()) {
                 const isNewPartner = !conversationPartners.some(
-                    (p) => p._id === senderId
+                    (p) => p._id === senderId.toString()
                 );
                 if (isNewPartner) {
                     console.log(

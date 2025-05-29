@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import {
     Camera,
@@ -30,6 +30,7 @@ const ProfilePage = () => {
     const [isBioEditing, setIsBioEditing] = useState(false);
     const [username, setUsername] = useState("");
     const [isUsernameEditing, setIsUsernameEditing] = useState(false);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (authUser) {
@@ -38,12 +39,12 @@ const ProfilePage = () => {
         }
     }, [authUser]);
 
-    const handleImageUpload = async (e) => {
+    const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
+        reader.onloadend = async () => {
             const base64Image = reader.result;
             if (typeof base64Image !== "string") {
                 toast.error("Failed to read image.");
@@ -55,6 +56,7 @@ const ProfilePage = () => {
         reader.onerror = () => {
             toast.error("Error reading file.");
         };
+        reader.readAsDataURL(file);
     };
 
     const handleSaveBio = async () => {
@@ -120,9 +122,15 @@ const ProfilePage = () => {
 
                         {/* Avatar Section */}
                         <div className="flex flex-col items-center space-y-2">
-                            <div className="relative">
-                                <div className="avatar">
-                                    <div className="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <div
+                                className="relative group w-32 h-32 cursor-pointer"
+                                onClick={() =>
+                                    !isUpdatingProfilePic &&
+                                    fileInputRef.current?.click()
+                                }
+                            >
+                                <div className="avatar w-full h-full">
+                                    <div className="w-full h-full rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden">
                                         <img
                                             src={
                                                 selectedImg ||
@@ -130,37 +138,39 @@ const ProfilePage = () => {
                                                 "/avatar.png"
                                             }
                                             alt="Profile"
-                                            className="object-cover"
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
                                 </div>
-                                <label
-                                    htmlFor="avatar-upload"
-                                    className={`btn btn-primary btn-circle btn-sm absolute bottom-1 right-1 transition-transform duration-200 hover:scale-110 ${
+                                <div
+                                    className={`absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-50 rounded-full transition-opacity duration-300 ${
                                         isUpdatingProfilePic
-                                            ? "animate-pulse cursor-not-allowed"
-                                            : "cursor-pointer"
+                                            ? "bg-opacity-50"
+                                            : ""
                                     }`}
                                 >
                                     {isUpdatingProfilePic ? (
-                                        <span className="loading loading-spinner loading-xs"></span>
+                                        <span className="loading loading-spinner loading-md text-white"></span>
                                     ) : (
-                                        <Camera className="w-4 h-4" />
+                                        <div className="flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <Camera className="w-8 h-8 text-white mb-1" />
+                                            <span className="text-xs text-white font-medium"></span>
+                                        </div>
                                     )}
-                                </label>
+                                </div>
                                 <input
                                     type="file"
-                                    id="avatar-upload"
+                                    ref={fileInputRef}
                                     className="hidden"
                                     accept="image/*"
-                                    onChange={handleImageUpload}
+                                    onChange={handleImageChange}
                                     disabled={isUpdatingProfilePic}
                                 />
                             </div>
-                            <p className="text-xs text-base-content/60">
+                            <p className="text-xs text-base-content/60 mt-2">
                                 {isUpdatingProfilePic
                                     ? "Uploading image..."
-                                    : "Click the camera icon to update"}
+                                    : "Click photo to update"}
                             </p>
                         </div>
 
@@ -412,7 +422,7 @@ const ProfilePage = () => {
                                             <BadgeCheck className="w-4 h-4" />
                                             Account Status
                                         </span>
-                                        <div className="badge badge-success badge-outline animate-pulse">
+                                        <div className="badge badge-success badge-outline">
                                             Active
                                         </div>
                                     </div>
