@@ -8,12 +8,14 @@ import { MantineProvider } from "@mantine/core";
 
 import "@mantine/core/styles.css";
 
+import "./i18n";
+
 createRoot(document.getElementById("root")).render(
     <StrictMode>
         <MantineProvider
             withGlobalStyles
             withNormalizeCSS
-            theme={{
+            /* theme={{
                 colorScheme: "auto",
                 primaryColor: "blue",
                 colors: {
@@ -30,7 +32,7 @@ createRoot(document.getElementById("root")).render(
                         "#0d47a1",
                     ],
                 },
-            }}
+            }} */
         >
             <BrowserRouter>
                 <App />

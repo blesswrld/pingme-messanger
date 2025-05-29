@@ -1,37 +1,38 @@
+// Файл: SettingsPage.jsx
 import React from "react";
 import { THEMES } from "../constants";
 import { useThemeStore } from "../store/useThemeStore";
 import { useAuthStore } from "../store/useAuthStore";
-import { Send, Check, Paperclip, Smile, CheckCheck } from "lucide-react";
+import {
+    Send as SendIcon,
+    Check,
+    CheckCheck,
+    Image as ImageIcon,
+    X as XIcon,
+} from "lucide-react"; // Переименовал иконки для ясности
+import { useTranslation } from "react-i18next";
 
-// --- Стили ---
 const chatBubbleBase =
-    "max-w-[70%] sm:max-w-[65%] rounded-lg px-3 py-1.5 shadow-sm text-sm leading-relaxed relative";
+    "rounded-lg px-3 py-1.5 shadow-sm text-sm leading-relaxed relative";
 const chatBubbleSent = "bg-primary text-primary-content";
 const chatBubbleReceived = "bg-base-100 text-content";
-const messageInputWrapperClasses = "relative flex items-center flex-1";
-const messageInputBaseClasses =
-    "block w-full rounded-xl border-0 py-2 pl-10 pr-10 bg-base-100 text-content shadow-sm ring-1 ring-inset ring-transparent placeholder:text-base-content/40 focus:ring-1 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 resize-none";
-const iconButtonClasses =
-    "inline-flex items-center justify-center p-2 rounded-full text-base-content/60 hover:text-primary hover:bg-primary/10 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-50 transition-colors duration-150 ease-in-out";
-const sendButtonClasses =
-    "inline-flex items-center justify-center size-10 rounded-full bg-primary text-primary-content hover:bg-primary/85 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-50 disabled:!bg-primary/40 transition-all duration-150 ease-in-out shrink-0";
 
-const PREVIEW_MESSAGES = [
-    { id: 1, content: "Hey! How's it going?", isSent: false },
+const PREVIEW_MESSAGES_KEYS = [
+    { id: 1, contentKey: "settingsPage.previewMessages.msg1", isSent: false },
     {
         id: 2,
-        content: "I'm doing great! Just working on some new features.",
+        contentKey: "settingsPage.previewMessages.msg2",
         isSent: true,
     },
     {
         id: 3,
-        content: "Awesome! Let me know if you need help testing.",
+        contentKey: "settingsPage.previewMessages.msg3",
         isSent: false,
     },
 ];
 
 const SettingsPage = () => {
+    const { t } = useTranslation();
     const { theme, setTheme } = useThemeStore();
     const { authUser } = useAuthStore();
     return (
@@ -39,26 +40,28 @@ const SettingsPage = () => {
             <div className="space-y-8">
                 {/* --- Theme Section --- */}
                 <div>
-                    <h2 className="text-xl font-semibold mb-1">Theme</h2>
+                    <h2 className="text-xl font-semibold mb-1">
+                        {t("settingsPage.themeTitle")}
+                    </h2>
                     <p className="text-sm text-base-content/70">
-                        Choose a theme for your chat interface.
+                        {t("settingsPage.themeSubtitle")}
                     </p>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                    {THEMES.map((t) => (
+                    {THEMES.map((themeOption) => (
                         <button
-                            key={t}
+                            key={themeOption}
                             className={`group relative flex flex-col items-center gap-2 p-2 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100 ${
-                                theme === t
+                                theme === themeOption
                                     ? "bg-primary/5 ring-1 ring-primary"
                                     : "hover:bg-base-200"
                             }`}
-                            onClick={() => setTheme(t)}
-                            aria-pressed={theme === t}
+                            onClick={() => setTheme(themeOption)}
+                            aria-pressed={theme === themeOption}
                         >
                             <div
                                 className="h-8 w-full rounded-md overflow-hidden"
-                                data-theme={t}
+                                data-theme={themeOption}
                             >
                                 <div className="grid grid-cols-4 h-full">
                                     <div className="bg-primary"></div>
@@ -68,9 +71,10 @@ const SettingsPage = () => {
                                 </div>
                             </div>
                             <span className="text-xs font-medium truncate w-full text-center">
-                                {t.charAt(0).toUpperCase() + t.slice(1)}
+                                {themeOption.charAt(0).toUpperCase() +
+                                    themeOption.slice(1)}
                             </span>
-                            {theme === t && (
+                            {theme === themeOption && (
                                 <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center size-5 rounded-full bg-primary">
                                     <Check className="size-3 text-primary-content" />
                                 </div>
@@ -81,46 +85,51 @@ const SettingsPage = () => {
 
                 {/* --- Preview Section --- */}
                 <div>
-                    <h2 className="text-xl font-semibold mb-1">Preview</h2>
+                    <h2 className="text-xl font-semibold mb-1">
+                        {t("settingsPage.previewTitle")}
+                    </h2>
                     <p className="text-sm text-base-content/70 mb-4">
-                        See how the selected theme looks in action.
+                        {t("settingsPage.previewSubtitle")}
                     </p>
                 </div>
                 <div className="rounded-xl overflow-hidden bg-base-200 shadow-sm">
                     {/* Preview Header */}
-                    <div className="p-3 border-base-content/5 bg-base-100 flex items-center justify-between shrink-0 h-[65px]">
+                    <div className="p-3 bg-base-100 flex items-center justify-between shrink-0 h-[65px]">
+                        {" "}
                         <div className="flex items-center gap-3 overflow-hidden">
                             <div className="relative shrink-0">
                                 <img
-                                    src="/avatar.png"
-                                    alt="Preview User"
+                                    src={authUser?.profilePic || "/avatar.png"} // Используем аватар текущего пользователя или дефолтный
+                                    alt={t("settingsPage.previewUserName")}
                                     className="size-10 object-cover rounded-full"
                                 />
                                 <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-success ring-2 ring-base-100" />
                             </div>
                             <div className="overflow-hidden">
                                 <h3 className="font-semibold truncate text-sm">
-                                    Jane Doe
+                                    {authUser?.fullName ||
+                                        t("settingsPage.previewUserName")}
                                 </h3>
                                 <p className="text-xs truncate text-success/80">
-                                    Online
+                                    {t("settingsPage.previewStatusOnline")}
                                 </p>
                             </div>
                         </div>
                     </div>
                     {/* Preview Messages */}
                     <div className="p-3 space-y-1.5 h-[250px] overflow-y-auto bg-base-200">
-                        {PREVIEW_MESSAGES.map((message, index) => {
+                        {PREVIEW_MESSAGES_KEYS.map((message, index) => {
                             const isSent = message.isSent;
                             // Используем authUser?.profilePic для аватара отправленного сообщения
                             const profilePic = isSent
                                 ? authUser?.profilePic || "/avatar.png"
                                 : "/avatar.png";
                             const isLastInGroup =
-                                index === PREVIEW_MESSAGES.length - 1 ||
-                                PREVIEW_MESSAGES[index + 1]?.isSent !==
-                                    message.isSent;
-                            const isRead = isSent && index % 3 === 0; // Заглушка статуса
+                                index === PREVIEW_MESSAGES_KEYS.length - 1 ||
+                                (PREVIEW_MESSAGES_KEYS[index + 1] &&
+                                    PREVIEW_MESSAGES_KEYS[index + 1]?.isSent !==
+                                        message.isSent);
+                            const isRead = isSent && index % 3 === 0;
                             return (
                                 <div
                                     key={message.id}
@@ -151,7 +160,7 @@ const SettingsPage = () => {
                                             }`}
                                         >
                                             <p className="break-words">
-                                                {message.content}
+                                                {t(message.contentKey)}
                                             </p>
                                             <div
                                                 className={`text-[10px] mt-1 ml-2 flex items-center gap-1 ${
@@ -174,40 +183,71 @@ const SettingsPage = () => {
                             );
                         })}
                     </div>
-                    {/* Preview Input */}
-                    <div className="p-2 sm:p-3 bg-base-100 shrink-0">
-                        <div className="flex items-end gap-2">
+                    {/* Preview Input - стили как в MessageInput.jsx */}
+                    <div className="p-4  bg-base-100">
+                        {/* Пример превью изображения */}
+
+                        {/* <div className="mb-2 relative w-20 h-20 group">
+                            <img
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRL_VADb6NJ-w4Z6cwzqxRgZcILtXUb8cPTlQ&s"
+                                alt={t("chatInput.imagePreviewAlt", {
+                                    defaultValue: "Preview",
+                                })}
+                                className="w-full h-full object-cover rounded-lg"
+                            />
                             <button
+                                className="btn btn-xs btn-circle btn-error absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                                 type="button"
-                                className={`${iconButtonClasses} mb-0.5`}
-                                aria-label="Emoji"
+                                aria-label={t("chatInput.removeImage")}
                             >
-                                <Smile size={22} />
+                                <XIcon className="w-3 h-3" />
                             </button>
-                            <div className={messageInputWrapperClasses}>
-                                <input
-                                    type="text"
-                                    className={`${messageInputBaseClasses} !pl-10 !pr-10`}
-                                    placeholder="Message"
-                                    value="This is a preview..."
-                                    readOnly
-                                />{" "}
-                                <button
-                                    type="button"
-                                    className={`${iconButtonClasses} absolute right-1.5`}
-                                    aria-label="Attach file"
+                        </div> */}
+
+                        <form
+                            onSubmit={(e) => e.preventDefault()}
+                            className="flex items-end gap-2"
+                        >
+                            <textarea
+                                className="textarea textarea-bordered rounded-lg w-full text-sm resize-none overflow-y-auto flex-grow focus:textarea-primary focus-within:outline-none"
+                                placeholder={t("chatInput.placeholder")}
+                                defaultValue={t(
+                                    "settingsPage.previewMessageValue"
+                                )} // Используем defaultValue для readOnly textarea
+                                rows={1}
+                                style={{ maxHeight: "120px" }}
+                                readOnly
+                            />
+                            <div className="flex items-end flex-shrink-0">
+                                <div
+                                    className="tooltip"
+                                    data-tip={t("chatInput.attachImage")}
                                 >
-                                    <Paperclip size={22} />
-                                </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-ghost btn-circle text-base-content/50" // Стиль для неактивной кнопки
+                                    >
+                                        <ImageIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <div className="transition-opacity duration-200 opacity-100">
+                                    {" "}
+                                    {/* Кнопка всегда видима в превью */}
+                                    <div
+                                        className="tooltip"
+                                        data-tip={t("chatInput.sendMessage")}
+                                    >
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary btn-circle"
+                                            disabled // Кнопка в превью неактивна
+                                        >
+                                            <SendIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <button
-                                type="button"
-                                className={sendButtonClasses}
-                                aria-label="Send message"
-                            >
-                                <Send size={22} />
-                            </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>

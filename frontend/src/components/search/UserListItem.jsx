@@ -1,8 +1,10 @@
 import React from "react";
 import useChatStore from "../../store/useChatStore";
+import { useTranslation } from "react-i18next";
 
 const UserListItem = ({ user, onUserSelect }) => {
     const { setSelectedUser } = useChatStore();
+    const { t } = useTranslation();
 
     const handleClick = () => {
         setSelectedUser(user);
@@ -21,7 +23,9 @@ const UserListItem = ({ user, onUserSelect }) => {
                     <div className="w-8 rounded-full">
                         <img
                             src={user.profilePic || "/avatar.png"}
-                            alt={`${user.fullName}'s profile`}
+                            alt={t("userSearch.userProfileAlt", {
+                                name: user.fullName,
+                            })}
                         />
                     </div>
                 </div>

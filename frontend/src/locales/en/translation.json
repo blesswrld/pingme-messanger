@@ -1,0 +1,119 @@
+{
+    "navbar": {
+        "pingMe": "PingMe",
+        "settings": "Settings",
+        "profile": "Profile",
+        "logout": "Logout",
+        "toggleTheme": "Toggle theme",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu",
+        "language": "Language"
+    },
+    "languages": {
+        "en": "English",
+        "ru": "Русский"
+    },
+    "chatHeader": {
+        "backToChats": "Back to chats",
+        "online": "Online",
+        "offline": "Offline",
+        "closeChat": "Close chat"
+    },
+    "chatInput": {
+        "placeholder": "Type a message...",
+        "removeImage": "Remove image",
+        "attachImage": "Attach image",
+        "sendMessage": "Send message",
+        "selectImageError": "Please select an image file"
+    },
+    "profilePage": {
+        "title": "Profile",
+        "subtitle": "Your profile information",
+        "uploading": "Uploading image...",
+        "updatePhotoHint": "Click photo to update",
+        "usernameLabel": "Username",
+        "editUsername": "Edit Username",
+        "notSet": "Not set",
+        "save": "Save",
+        "cancel": "Cancel",
+        "emailLabel": "Email Address",
+        "bioLabel": "Bio",
+        "editBio": "Edit Bio",
+        "addBioHint": "Click to add bio...",
+        "accountInfoTitle": "Account Information",
+        "memberSince": "Member Since",
+        "accountStatus": "Account Status",
+        "active": "Active",
+        "errorReadingFile": "Error reading file.",
+        "failedToReadImage": "Failed to read image.",
+        "usernameLengthError": "Username must be between 3 and 30 characters.",
+        "changePhoto": "Change"
+    },
+    "loginPage": {
+        "welcomeBack": "Welcome Back",
+        "signInToAccount": "Sign in to your account",
+        "emailPlaceholder": "you@example.com",
+        "passwordPlaceholder": "••••••••",
+        "signIn": "Sign in",
+        "loading": "Loading...",
+        "orContinueWith": "OR CONTINUE WITH",
+        "loginWithGoogle": "Login with Google",
+        "loginWithGitHub": "Login with GitHub",
+        "noAccount": "Don't have an account?",
+        "createAccountLink": "Create account",
+        "howToCreateTitle": "How do I create an account?",
+        "howToCreateContent": "Click the \"Create account\" link above or continue with Google or GitHub account.",
+        "emailRequired": "Email is required",
+        "invalidEmail": "Invalid email format",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 6 characters"
+    },
+    "signUpPage": {
+        "createAccountTitle": "Create Account",
+        "getStarted": "Get started with your free account",
+        "usernamePlaceholder": "Username",
+        "usernameHint": "Must be 3 to 30 characters, containing only letters, numbers, or dash",
+        "createAccountButton": "Create Account",
+        "haveAccount": "Already have an account?",
+        "signInLink": "Sign in",
+        "howToSignInTitle": "What if I already have an account?",
+        "howToSignInContent": "Click the \"Sign in\" link above or continue with Google or GitHub account",
+        "usernameRequired": "Username is required",
+        "usernameInvalidFormat": "Username must be 3 to 30 characters, containing only letters, numbers, or dash"
+    },
+    "settingsPage": {
+        "themeTitle": "Theme",
+        "themeSubtitle": "Choose a theme for your chat interface.",
+        "previewTitle": "Preview",
+        "previewSubtitle": "See how the selected theme looks in action.",
+        "previewUserName": "Jane Doe",
+        "previewStatusOnline": "Online",
+        "previewMessagePlaceholder": "Message",
+        "previewSendLabel": "Send message",
+        "previewEmojiLabel": "Emoji",
+        "previewAttachLabel": "Attach file",
+        "previewMessageValue": "This is a preview...",
+        "previewMessages": {
+            "msg1": "Hey! How's it going?",
+            "msg2": "Great! And you?",
+            "msg3": "Not bad, thanks for asking :)"
+        }
+    },
+    "userSearch": {
+        "placeholder": "Search users...",
+        "clearSearch": "Clear search",
+        "loading": "Loading...",
+        "error": "Failed to search users",
+        "noUsersFound": "No users found"
+    },
+    "noChatSelected": {
+        "welcome": "Welcome to PingMe!",
+        "selectConversation": "Select a conversation from the sidebar to start chatting"
+    },
+    "authImagePattern": {
+        "loginTitle": "Welcome back!",
+        "loginSubtitle": "Sign in to continue your conversations and catch up with your messages.",
+        "signUpTitle": "Join our community",
+        "signUpSubtitle": "Connect with friends, share moments, and stay in touch with your loved ones"
+    }
+}

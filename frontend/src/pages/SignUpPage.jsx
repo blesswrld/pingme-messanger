@@ -4,8 +4,10 @@ import { Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const SignUpPage = () => {
+    const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
     const [showUsernameHint, setShowUsernameHint] = useState(false);
     const [formData, setFormData] = useState({
@@ -19,34 +21,32 @@ const SignUpPage = () => {
     const validateForm = () => {
         const usernameRegex = /^[a-zA-Z0-9-]{3,30}$/;
         if (!formData.fullName.trim()) {
-            toast.error("Username is required");
+            toast.error(t("signUpPage.usernameRequired"));
             setShowUsernameHint(true);
             return false;
         }
         if (!usernameRegex.test(formData.fullName)) {
-            toast.error(
-                "Username must be 3 to 30 characters, containing only letters, numbers, or dash"
-            );
+            toast.error(t("signUpPage.usernameInvalidFormat"));
             setShowUsernameHint(true);
             return false;
         }
         setShowUsernameHint(false);
 
         if (!formData.email.trim()) {
-            toast.error("Email is required");
+            toast.error(t("loginPage.emailRequired"));
             return false;
         }
         if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            toast.error("Invalid email format");
+            toast.error(t("loginPage.invalidEmail"));
             return false;
         }
 
         if (!formData.password) {
-            toast.error("Password is required");
+            toast.error(t("loginPage.passwordRequired"));
             return false;
         }
         if (formData.password.length < 6) {
-            toast.error("Password must be at least 6 characters");
+            toast.error(t("loginPage.passwordMinLength"));
             return false;
         }
 
@@ -84,10 +84,10 @@ const SignUpPage = () => {
                                 <MessageSquare className="size-6 text-primary" />
                             </div>
                             <h1 className="text-2xl font-bold mt-2">
-                                Create Account
+                                {t("signUpPage.createAccountTitle")}
                             </h1>
                             <p className="text-base-content/60">
-                                Get started with your free account
+                                {t("signUpPage.getStarted")}
                             </p>
                         </div>
                     </div>
@@ -114,7 +114,9 @@ const SignUpPage = () => {
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Username"
+                                    placeholder={t(
+                                        "signUpPage.usernamePlaceholder"
+                                    )}
                                     minLength={3}
                                     maxLength={30}
                                     value={formData.fullName}
@@ -131,8 +133,7 @@ const SignUpPage = () => {
                                     showUsernameHint ? "block" : "hidden"
                                 }`}
                             >
-                                Must be 3 to 30 characters, containing only
-                                letters, numbers, or dash
+                                {t("signUpPage.usernameHint")}
                             </p>
                         </div>
 
@@ -162,7 +163,9 @@ const SignUpPage = () => {
                                 </svg>
                                 <input
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder={t(
+                                        "loginPage.emailPlaceholder"
+                                    )}
                                     value={formData.email}
                                     required
                                     onChange={(e) =>
@@ -201,7 +204,9 @@ const SignUpPage = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     required
-                                    placeholder="••••••••"
+                                    placeholder={t(
+                                        "loginPage.passwordPlaceholder"
+                                    )}
                                     value={formData.password}
                                     onChange={(e) =>
                                         setFormData({
@@ -234,26 +239,28 @@ const SignUpPage = () => {
                             {isSigningUp ? (
                                 <>
                                     <Loader2 className="size-5 animate-spin" />
-                                    Loading
+                                    {t("loginPage.loading")}
                                 </>
                             ) : (
-                                "Create Account"
+                                t("signUpPage.createAccountButton")
                             )}
                         </button>
                     </form>
 
                     <div className="text-center mt-4">
                         <p className="text-base-content/60">
-                            Already have an account?{" "}
+                            {t("signUpPage.haveAccount")}{" "}
                             <Link
                                 to="/login"
                                 className="link link-primary hover:opacity-70 transition-opacity duration-200"
                             >
-                                Sign in
+                                {t("signUpPage.signInLink")}
                             </Link>
                         </p>
                     </div>
-                    <div className="divider">OR CONTINUE WITH</div>
+                    <div className="divider">
+                        {t("loginPage.orContinueWith")}
+                    </div>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-3">
                         {/* Google Button - светлая с рамкой */}
@@ -289,7 +296,7 @@ const SignUpPage = () => {
                                     ></path>
                                 </g>
                             </svg>
-                            Login with Google
+                            {t("loginPage.loginWithGoogle")}
                         </button>
                         {/* GitHub Button - темная */}
                         <button
@@ -309,7 +316,7 @@ const SignUpPage = () => {
                                     d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"
                                 ></path>
                             </svg>
-                            Login with GitHub
+                            {t("loginPage.loginWithGitHub")}
                         </button>
                     </div>
                     <div
@@ -317,11 +324,10 @@ const SignUpPage = () => {
                         className="collapse collapse-plus bg-base-100 border-base-300 border"
                     >
                         <div className="collapse-title font-semibold">
-                            What if I already have an account?
+                            {t("signUpPage.howToSignInTitle")}
                         </div>
                         <div className="collapse-content text-sm">
-                            Click the "Sign in" link above or continue with
-                            Google or GitHub account
+                            {t("signUpPage.howToSignInContent")}
                         </div>
                     </div>
                 </div>
@@ -329,8 +335,8 @@ const SignUpPage = () => {
 
             {/* right side */}
             <AuthImagePattern
-                title="Join our community"
-                subtitle="Connect with friends, share moments, and stay in touch with your loved ones"
+                titleKey="authImagePattern.signUpTitle"
+                subtitleKey="authImagePattern.signUpSubtitle"
             />
         </div>
     );

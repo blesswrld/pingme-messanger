@@ -4,8 +4,10 @@ import { axiosInstance } from "../../lib/axios";
 import UserListItem from "./UserListItem";
 import debounce from "lodash.debounce";
 import SearchSkeleton from "../skeletons/SidebarSkeleton";
+import { useTranslation } from "react-i18next";
 
 const UserSearch = () => {
+    const { t } = useTranslation();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -33,10 +35,8 @@ const UserSearch = () => {
             setShowResults(true);
         } catch (err) {
             const errorMessage =
-                err.response?.data?.message || "Failed to search users";
+                err.response?.data?.message || t("userSearch.error");
             setError(errorMessage);
-            toast.error(errorMessage);
-
             setResults([]);
             setShowResults(true);
         } finally {
@@ -85,7 +85,7 @@ const UserSearch = () => {
                     <Search className="w-4 h-4 opacity-70" />
                     <input
                         type="text"
-                        placeholder="Search users..."
+                        placeholder={t("userSearch.placeholder")}
                         className="grow bg-transparent text-sm focus:outline-none"
                         value={query}
                         onChange={handleInputChange}
@@ -98,7 +98,7 @@ const UserSearch = () => {
                             type="button"
                             className="btn btn-ghost btn-circle btn-xs p-0 m-0 h-auto min-h-0"
                             onClick={clearSearch}
-                            aria-label="Clear search"
+                            aria-label={t("userSearch.clearSearch")}
                         >
                             <X className="w-4 h-4 opacity-70 hover:text-error" />
                         </button>
@@ -108,7 +108,7 @@ const UserSearch = () => {
 
             {showResults && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-2">
-                    {isLoading ? (
+                    {isLoading && results.length === 0 ? ( // Показываем скелетон только если результатов еще нет
                         <SearchSkeleton count={3} />
                     ) : error ? (
                         <p className="text-error text-xs text-center p-2">
@@ -124,9 +124,9 @@ const UserSearch = () => {
                                 />
                             ))}
                         </ul>
-                    ) : query.trim() ? (
+                    ) : query.trim() && !isLoading ? ( // Показываем "No users found" только если не идет загрузка
                         <p className="text-center text-xs text-base-content/50 p-2">
-                            No users found
+                            {t("userSearch.noUsersFound")}
                         </p>
                     ) : null}
                 </div>

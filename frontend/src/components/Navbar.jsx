@@ -9,16 +9,20 @@ import {
     Moon,
     Menu,
     X,
+    Languages, // Иконка для выбора языка
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useThemeStore from "../store/useThemeStore";
 import useChatStore from "../store/useChatStore";
+import { useTranslation } from "react-i18next"; // Хук для получения переводов
 
 const Navbar = () => {
     const { logout, authUser } = useAuthStore();
     const { theme, setTheme } = useThemeStore();
     const { setSelectedUser } = useChatStore();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const { t, i18n } = useTranslation(); // t - функция для перевода, i18n - экземпляр i18next
 
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
@@ -38,6 +42,16 @@ const Navbar = () => {
         setIsMenuOpen((prev) => !prev);
     };
 
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+        setIsMenuOpen(false); // Закрываем меню при смене языка на мобильных
+    };
+
+    const availableLanguages = [
+        { code: "ru", name: t("languages.ru") },
+        { code: "en", name: t("languages.en") },
+    ];
+
     return (
         <div className="navbar bg-base-100 border-b border-base-300 fixed top-0 z-40 h-16 min-h-16 backdrop-blur-lg bg-opacity-80">
             <div className="navbar-start">
@@ -47,12 +61,11 @@ const Navbar = () => {
                     onClick={handleLogoClick}
                 >
                     <MessageSquareText className="w-6 h-6" />
-                    PingMe
+                    {t("navbar.pingMe")}
                 </Link>
             </div>
 
-            {/* Элементы навигации для десктопа */}
-            <div className="navbar-end hidden md:flex gap-2 lg:gap-4 items-center">
+            <div className="navbar-end hidden md:flex gap-2 lg:gap-3 items-center">
                 <label className="flex cursor-pointer gap-2 items-center p-2 rounded-lg hover:bg-base-200 transition-colors">
                     <Sun
                         className={`w-5 h-5 ${
@@ -66,7 +79,7 @@ const Navbar = () => {
                         className="toggle toggle-primary toggle-sm"
                         checked={theme === "dark"}
                         onChange={toggleTheme}
-                        aria-label="Toggle theme"
+                        aria-label={t("navbar.toggleTheme")}
                     />
                     <Moon
                         className={`w-5 h-5 ${
@@ -77,7 +90,46 @@ const Navbar = () => {
                     />
                 </label>
 
-                <div className="tooltip tooltip-bottom" data-tip="Settings">
+                {/* Выбор языка для десктопа */}
+                <div className="dropdown dropdown-end">
+                    <div
+                        tabIndex={0}
+                        role="button"
+                        className="btn btn-ghost btn-circle"
+                        aria-label={t("navbar.language")}
+                    >
+                        <div
+                            className="tooltip tooltip-bottom"
+                            data-tip={t("navbar.language")}
+                        >
+                            <Languages className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <ul
+                        tabIndex={0}
+                        className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-40"
+                    >
+                        {availableLanguages.map((lang) => (
+                            <li key={lang.code}>
+                                <button
+                                    onClick={() => changeLanguage(lang.code)}
+                                    className={
+                                        i18n.resolvedLanguage === lang.code
+                                            ? "active"
+                                            : ""
+                                    }
+                                >
+                                    {lang.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div
+                    className="tooltip tooltip-bottom"
+                    data-tip={t("navbar.settings")}
+                >
                     <Link to={"/settings"} className="btn btn-ghost btn-circle">
                         <Settings className="w-5 h-5" />
                     </Link>
@@ -87,7 +139,7 @@ const Navbar = () => {
                     <>
                         <div
                             className="tooltip tooltip-bottom"
-                            data-tip="Profile"
+                            data-tip={t("navbar.profile")}
                         >
                             <Link
                                 to={"/profile"}
@@ -99,7 +151,7 @@ const Navbar = () => {
 
                         <div
                             className="tooltip tooltip-bottom"
-                            data-tip="Logout"
+                            data-tip={t("navbar.logout")}
                         >
                             <button
                                 className="btn btn-ghost btn-circle"
@@ -117,7 +169,11 @@ const Navbar = () => {
                 <button
                     className="btn btn-ghost btn-circle"
                     onClick={toggleMenu}
-                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                    aria-label={
+                        isMenuOpen
+                            ? t("navbar.closeMenu")
+                            : t("navbar.openMenu")
+                    }
                 >
                     {isMenuOpen ? (
                         <X className="w-6 h-6" />
@@ -144,7 +200,7 @@ const Navbar = () => {
                                 className="toggle toggle-primary toggle-sm"
                                 checked={theme === "dark"}
                                 onChange={toggleTheme}
-                                aria-label="Toggle theme"
+                                aria-label={t("navbar.toggleTheme")}
                             />
                             <Moon
                                 className={`w-5 h-5 ${
@@ -155,13 +211,43 @@ const Navbar = () => {
                             />
                         </label>
 
+                        {/* Выбор языка для мобильного меню */}
+                        <div className="collapse collapse-arrow bg-base-200/50 rounded-lg">
+                            <input type="checkbox" name="language-accordion" />
+                            <div className="collapse-title text-md font-medium flex items-center gap-2">
+                                <Languages className="w-5 h-5" />
+                                {t("navbar.language")}
+                            </div>
+                            <div className="collapse-content">
+                                <ul className="menu p-0">
+                                    {availableLanguages.map((lang) => (
+                                        <li key={lang.code}>
+                                            <button
+                                                onClick={() =>
+                                                    changeLanguage(lang.code)
+                                                }
+                                                className={`w-full justify-start ${
+                                                    i18n.resolvedLanguage ===
+                                                    lang.code
+                                                        ? "active btn-active"
+                                                        : ""
+                                                }`}
+                                            >
+                                                {lang.name}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
                         <Link
                             to={"/settings"}
                             className="btn btn-ghost justify-start gap-2"
                             onClick={toggleMenu}
                         >
                             <Settings className="w-5 h-5" />
-                            Settings
+                            {t("navbar.settings")}
                         </Link>
 
                         {authUser && (
@@ -172,7 +258,7 @@ const Navbar = () => {
                                     onClick={toggleMenu}
                                 >
                                     <User className="w-5 h-5" />
-                                    Profile
+                                    {t("navbar.profile")}
                                 </Link>
 
                                 <button
@@ -183,7 +269,7 @@ const Navbar = () => {
                                     }}
                                 >
                                     <LogOut className="w-5 h-5" />
-                                    Logout
+                                    {t("navbar.logout")}
                                 </button>
                             </>
                         )}

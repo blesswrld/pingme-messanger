@@ -1,0 +1,119 @@
+{
+    "navbar": {
+        "pingMe": "PingMe",
+        "settings": "Настройки",
+        "profile": "Профиль",
+        "logout": "Выйти",
+        "toggleTheme": "Переключить тему",
+        "openMenu": "Открыть меню",
+        "closeMenu": "Закрыть меню",
+        "language": "Язык"
+    },
+    "languages": {
+        "en": "English",
+        "ru": "Русский"
+    },
+    "chatHeader": {
+        "backToChats": "Назад к чатам",
+        "online": "В сети",
+        "offline": "Не в сети",
+        "closeChat": "Закрыть чат"
+    },
+    "chatInput": {
+        "placeholder": "Введите сообщение...",
+        "removeImage": "Удалить изображение",
+        "attachImage": "Прикрепить изображение",
+        "sendMessage": "Отправить сообщение",
+        "selectImageError": "Пожалуйста, выберите файл изображения"
+    },
+    "profilePage": {
+        "title": "Профиль",
+        "subtitle": "Информация вашего профиля",
+        "uploading": "Загрузка изображения...",
+        "updatePhotoHint": "Нажмите на фото для обновления",
+        "usernameLabel": "Имя пользователя",
+        "editUsername": "Изменить имя пользователя",
+        "notSet": "Не указано",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "emailLabel": "Электронная почта",
+        "bioLabel": "О себе",
+        "editBio": "Изменить описание",
+        "addBioHint": "Нажмите, чтобы добавить описание...",
+        "accountInfoTitle": "Информация об аккаунте",
+        "memberSince": "Зарегистрирован с",
+        "accountStatus": "Статус аккаунта",
+        "active": "Активен",
+        "errorReadingFile": "Ошибка чтения файла.",
+        "failedToReadImage": "Не удалось прочитать изображение.",
+        "usernameLengthError": "Имя пользователя должно быть от 3 до 30 символов.",
+        "changePhoto": "Изменить"
+    },
+    "loginPage": {
+        "welcomeBack": "С возвращением!",
+        "signInToAccount": "Войдите в свой аккаунт",
+        "emailPlaceholder": "you@example.com",
+        "passwordPlaceholder": "••••••••",
+        "signIn": "Войти",
+        "loading": "Загрузка...",
+        "orContinueWith": "ИЛИ ПРОДОЛЖИТЬ С",
+        "loginWithGoogle": "Войти через Google",
+        "loginWithGitHub": "Войти через GitHub",
+        "noAccount": "Нет аккаунта?",
+        "createAccountLink": "Создать аккаунт",
+        "howToCreateTitle": "Как создать аккаунт?",
+        "howToCreateContent": "Нажмите ссылку \"Создать аккаунт\" выше или продолжите с аккаунтом Google или GitHub.",
+        "emailRequired": "Требуется адрес электронной почты",
+        "invalidEmail": "Неверный формат электронной почты",
+        "passwordRequired": "Требуется пароль",
+        "passwordMinLength": "Пароль должен содержать не менее 6 символов"
+    },
+    "signUpPage": {
+        "createAccountTitle": "Создать аккаунт",
+        "getStarted": "Начните с бесплатного аккаунта",
+        "usernamePlaceholder": "Имя пользователя",
+        "usernameHint": "От 3 до 30 символов, только буквы, цифры или дефис",
+        "createAccountButton": "Создать аккаунт",
+        "haveAccount": "Уже есть аккаунт?",
+        "signInLink": "Войти",
+        "howToSignInTitle": "Что если у меня уже есть аккаунт?",
+        "howToSignInContent": "Нажмите ссылку \"Войти\" выше или продолжите с аккаунтом Google или GitHub",
+        "usernameRequired": "Требуется имя пользователя",
+        "usernameInvalidFormat": "Имя пользователя должно содержать от 3 до 30 символов, только буквы, цифры или дефис"
+    },
+    "settingsPage": {
+        "themeTitle": "Тема",
+        "themeSubtitle": "Выберите тему для вашего интерфейса чата.",
+        "previewTitle": "Предпросмотр",
+        "previewSubtitle": "Посмотрите, как выбранная тема выглядит в действии.",
+        "previewUserName": "Анна Смирнова",
+        "previewStatusOnline": "В сети",
+        "previewMessagePlaceholder": "Сообщение",
+        "previewSendLabel": "Отправить сообщение",
+        "previewEmojiLabel": "Эмодзи",
+        "previewAttachLabel": "Прикрепить файл",
+        "previewMessageValue": "Это предпросмотр...",
+        "previewMessages": {
+            "msg1": "Привет! Как дела?",
+            "msg2": "Привет! Отлично. А у тебя?",
+            "msg3": "Неплохо, спасибо что спросил :)"
+        }
+    },
+    "userSearch": {
+        "placeholder": "Поиск пользователей...",
+        "clearSearch": "Очистить поиск",
+        "loading": "Загрузка...",
+        "error": "Не удалось найти пользователей",
+        "noUsersFound": "Пользователи не найдены"
+    },
+    "noChatSelected": {
+        "welcome": "Добро пожаловать в PingMe!",
+        "selectConversation": "Выберите чат в боковой панели, чтобы начать общение"
+    },
+    "authImagePattern": {
+        "loginTitle": "С возвращением!",
+        "loginSubtitle": "Войдите, чтобы продолжить общение и прочитать сообщения.",
+        "signUpTitle": "Присоединяйтесь к нашему сообществу",
+        "signUpSubtitle": "Общайтесь с друзьями, делитесь моментами и оставайтесь на связи с близкими"
+    }
+}

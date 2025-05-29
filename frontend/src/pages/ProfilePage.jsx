@@ -12,8 +12,10 @@ import {
     BadgeCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const ProfilePage = () => {
+    const { t } = useTranslation();
     const {
         authUser,
         isCheckingAuth,
@@ -47,14 +49,14 @@ const ProfilePage = () => {
         reader.onloadend = async () => {
             const base64Image = reader.result;
             if (typeof base64Image !== "string") {
-                toast.error("Failed to read image.");
+                toast.error(t("profilePage.failedToReadImage"));
                 return;
             }
             setSelectedImg(base64Image);
             await updateProfilePic(base64Image);
         };
         reader.onerror = () => {
-            toast.error("Error reading file.");
+            toast.error(t("profilePage.errorReadingFile"));
         };
         reader.readAsDataURL(file);
     };
@@ -81,7 +83,7 @@ const ProfilePage = () => {
             return;
         }
         if (trimmedUsername.length < 3 || trimmedUsername.length > 30) {
-            toast.error("Username must be between 3 and 30 characters.");
+            toast.error(t("profilePage.usernameLengthError"));
             return;
         }
         await updateUsername(trimmedUsername);
@@ -99,7 +101,6 @@ const ProfilePage = () => {
     if (isCheckingAuth) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                {/* Используем DaisyUI спиннер */}
                 <span className="loading loading-spinner loading-lg text-primary"></span>
             </div>
         );
@@ -110,17 +111,15 @@ const ProfilePage = () => {
             <div className="card max-w-2xl mx-auto bg-base-300 shadow-xl p-6 md:p-8">
                 <div className="card-body p-0">
                     <div className="flex flex-col space-y-8">
-                        {/* Header */}
                         <div className="flex flex-col items-center space-y-1">
                             <h1 className="text-2xl font-semibold text-base-content">
-                                Profile
+                                {t("profilePage.title")}
                             </h1>
                             <p className="text-sm text-base-content/70">
-                                Your profile information
+                                {t("profilePage.subtitle")}
                             </p>
                         </div>
 
-                        {/* Avatar Section */}
                         <div className="flex flex-col items-center space-y-2">
                             <div
                                 className="relative group w-32 h-32 cursor-pointer"
@@ -137,7 +136,7 @@ const ProfilePage = () => {
                                                 authUser?.profilePic ||
                                                 "/avatar.png"
                                             }
-                                            alt="Profile"
+                                            alt={t("profilePage.title")}
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
@@ -154,7 +153,9 @@ const ProfilePage = () => {
                                     ) : (
                                         <div className="flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                             <Camera className="w-8 h-8 text-white mb-1" />
-                                            <span className="text-xs text-white font-medium"></span>
+                                            <span className="text-xs text-white font-medium">
+                                                {t("profilePage.changePhoto")}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -169,26 +170,26 @@ const ProfilePage = () => {
                             </div>
                             <p className="text-xs text-base-content/60 mt-2">
                                 {isUpdatingProfilePic
-                                    ? "Uploading image..."
-                                    : "Click photo to update"}
+                                    ? t("profilePage.uploading")
+                                    : t("profilePage.updatePhotoHint")}
                             </p>
                         </div>
 
-                        {/* User Info Sections */}
                         <div className="flex flex-col space-y-6">
-                            {/* Username Section */}
                             <div className="flex flex-col space-y-1.5">
                                 <div className="flex items-center justify-between">
                                     <label className="label py-0">
                                         <span className="label-text text-base-content/70 flex items-center gap-2">
                                             <User className="w-4 h-4" />
-                                            Username
+                                            {t("profilePage.usernameLabel")}
                                         </span>
                                     </label>
                                     {!isUsernameEditing && (
                                         <div
                                             className="tooltip tooltip-left"
-                                            data-tip="Edit Username"
+                                            data-tip={t(
+                                                "profilePage.editUsername"
+                                            )}
                                         >
                                             <button
                                                 className="btn btn-ghost btn-xs p-1 h-auto min-h-0 text-primary"
@@ -202,7 +203,6 @@ const ProfilePage = () => {
                                         </div>
                                     )}
                                 </div>
-
                                 {!isUsernameEditing ? (
                                     <div
                                         onClick={() =>
@@ -218,7 +218,7 @@ const ProfilePage = () => {
                                         <span className="text-sm text-base-content">
                                             {username || (
                                                 <span className="italic opacity-70">
-                                                    Not set
+                                                    {t("profilePage.notSet")}
                                                 </span>
                                             )}
                                         </span>
@@ -227,7 +227,9 @@ const ProfilePage = () => {
                                     <div className="flex items-center space-x-2">
                                         <input
                                             type="text"
-                                            placeholder="Enter username"
+                                            placeholder={t(
+                                                "profilePage.usernameLabel"
+                                            )}
                                             className="input input-bordered input-primary w-full flex-grow text-sm focus:outline-none"
                                             value={username}
                                             onChange={(e) =>
@@ -239,7 +241,7 @@ const ProfilePage = () => {
                                         />
                                         <div
                                             className="tooltip"
-                                            data-tip="Save"
+                                            data-tip={t("profilePage.save")}
                                         >
                                             <button
                                                 className="btn btn-success btn-sm btn-square"
@@ -262,7 +264,7 @@ const ProfilePage = () => {
                                         </div>
                                         <div
                                             className="tooltip"
-                                            data-tip="Cancel"
+                                            data-tip={t("profilePage.cancel")}
                                         >
                                             <button
                                                 className="btn btn-error btn-outline btn-sm btn-square"
@@ -278,12 +280,11 @@ const ProfilePage = () => {
                                 )}
                             </div>
 
-                            {/* Email Section */}
                             <div className="flex flex-col space-y-1.5">
                                 <label className="label py-0">
                                     <span className="label-text text-base-content/70 flex items-center gap-2">
                                         <Mail className="w-4 h-4" />
-                                        Email Address
+                                        {t("profilePage.emailLabel")}
                                     </span>
                                 </label>
                                 <div className="flex items-center px-4 py-2.5 bg-base-200 rounded-lg min-h-[2.5rem] w-full cursor-not-allowed">
@@ -293,19 +294,18 @@ const ProfilePage = () => {
                                 </div>
                             </div>
 
-                            {/* Bio Section */}
                             <div className="flex flex-col space-y-1.5">
                                 <div className="flex items-center justify-between">
                                     <label className="label py-0">
                                         <span className="label-text text-base-content/70 flex items-center gap-2">
                                             <MessageSquare className="w-4 h-4" />
-                                            Bio
+                                            {t("profilePage.bioLabel")}
                                         </span>
                                     </label>
                                     {!isBioEditing && (
                                         <div
                                             className="tooltip tooltip-left"
-                                            data-tip="Edit Bio"
+                                            data-tip={t("profilePage.editBio")}
                                         >
                                             <button
                                                 className="btn btn-ghost btn-xs p-1 h-auto min-h-0 text-primary"
@@ -319,7 +319,6 @@ const ProfilePage = () => {
                                         </div>
                                     )}
                                 </div>
-
                                 {!isBioEditing ? (
                                     <div
                                         onClick={() =>
@@ -335,7 +334,9 @@ const ProfilePage = () => {
                                         <span className="text-sm text-base-content">
                                             {bio || (
                                                 <span className="italic opacity-70">
-                                                    Click to add bio...
+                                                    {t(
+                                                        "profilePage.addBioHint"
+                                                    )}
                                                 </span>
                                             )}
                                         </span>
@@ -343,7 +344,9 @@ const ProfilePage = () => {
                                 ) : (
                                     <div className="flex flex-col space-y-2">
                                         <textarea
-                                            placeholder="Tell us about yourself..."
+                                            placeholder={t(
+                                                "profilePage.bioLabel"
+                                            )}
                                             className={`textarea textarea-bordered textarea-primary w-full text-sm resize-none focus:outline-none ${
                                                 isUpdatingBio
                                                     ? "focus:outline-none opacity-70 cursor-not-allowed"
@@ -376,7 +379,7 @@ const ProfilePage = () => {
                                                 ) : (
                                                     <Check className="w-4 h-4 mr-1" />
                                                 )}
-                                                Save
+                                                {t("profilePage.save")}
                                             </button>
                                             <button
                                                 className="btn btn-error btn-outline btn-sm"
@@ -384,7 +387,7 @@ const ProfilePage = () => {
                                                 disabled={isUpdatingBio}
                                             >
                                                 <X className="w-4 h-4 mr-1" />
-                                                Cancel
+                                                {t("profilePage.cancel")}
                                             </button>
                                         </div>
                                     </div>
@@ -392,22 +395,19 @@ const ProfilePage = () => {
                             </div>
                         </div>
 
-                        {/* Divider */}
                         <div className="divider my-4"></div>
 
-                        {/* Account Information Section */}
                         <div className="flex flex-col space-y-4">
                             <h2 className="text-lg font-medium text-base-content">
-                                Account Information
+                                {t("profilePage.accountInfoTitle")}
                             </h2>
                             <div className="bg-base-200 rounded-lg p-4  border-base-content/10">
                                 <div className="flex flex-col space-y-2 text-sm">
                                     <div className="flex items-center justify-between">
                                         <span className="flex items-center gap-2 text-base-content/70">
                                             <CalendarDays className="w-4 h-4" />
-                                            Member Since
+                                            {t("profilePage.memberSince")}
                                         </span>
-                                        {/* TODO: fix bag with createdDate */}
                                         <span className="text-base-content">
                                             {authUser?.createdAt
                                                 ? new Date(
@@ -420,10 +420,10 @@ const ProfilePage = () => {
                                     <div className="flex items-center justify-between">
                                         <span className="flex items-center gap-2 text-base-content/70">
                                             <BadgeCheck className="w-4 h-4" />
-                                            Account Status
+                                            {t("profilePage.accountStatus")}
                                         </span>
                                         <div className="badge badge-success badge-outline">
-                                            Active
+                                            {t("profilePage.active")}
                                         </div>
                                     </div>
                                 </div>

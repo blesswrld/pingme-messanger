@@ -1,13 +1,16 @@
 import { X, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { useTranslation } from "react-i18next";
 
 const ChatHeader = () => {
     const { selectedUser, setSelectedUser } = useChatStore();
     const { onlineUsers } = useAuthStore();
-    const isOnline = onlineUsers.includes(selectedUser._id);
+    const { t } = useTranslation();
 
     if (!selectedUser) return null;
+
+    const isOnline = onlineUsers.includes(selectedUser._id);
 
     return (
         <div className="flex items-center justify-between p-3 border-b border-base-300 bg-base-100 lg:bg-base-200 md:rounded-tr-lg flex-shrink-0">
@@ -16,7 +19,7 @@ const ChatHeader = () => {
                 <button
                     className="btn btn-ghost btn-circle btn-sm lg:hidden"
                     onClick={() => setSelectedUser(null)}
-                    aria-label="Back to chats"
+                    aria-label={t("chatHeader.backToChats")}
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -39,7 +42,9 @@ const ChatHeader = () => {
                             isOnline ? "text-success" : "text-base-content/60"
                         }`}
                     >
-                        {isOnline ? "Online" : "Offline"}
+                        {isOnline
+                            ? t("chatHeader.online")
+                            : t("chatHeader.offline")}
                     </p>
                 </div>
             </div>
@@ -47,12 +52,12 @@ const ChatHeader = () => {
             {/* Кнопка Закрыть видна только на lg+ */}
             <div
                 className="tooltip tooltip-left hidden lg:block"
-                data-tip="Close chat"
+                data-tip={t("chatHeader.closeChat")}
             >
                 <button
                     className="btn btn-ghost btn-circle btn-sm"
                     onClick={() => setSelectedUser(null)}
-                    aria-label="Close chat"
+                    aria-label={t("chatHeader.closeChat")}
                 >
                     <X className="w-5 h-5" />
                 </button>

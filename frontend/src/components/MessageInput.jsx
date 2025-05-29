@@ -2,8 +2,10 @@ import React, { useRef, useState, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next"; // <--- Импортируем
 
 const MessageInput = () => {
+    const { t } = useTranslation(); // <--- Получаем t
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
@@ -23,7 +25,7 @@ const MessageInput = () => {
         const file = e.target.files[0];
         if (!file) return;
         if (!file.type.startsWith("image/")) {
-            toast.error("Please select an image file");
+            toast.error(t("chatInput.selectImageError")); // <--- Перевод
             return;
         }
 
@@ -69,14 +71,16 @@ const MessageInput = () => {
                 <div className="mb-2 relative w-20 h-20 group">
                     <img
                         src={imagePreview}
-                        alt="Preview"
+                        alt={t("chatInput.imagePreviewAlt", {
+                            defaultValue: "Preview",
+                        })} // <--- Добавьте ключ chatInput.imagePreviewAlt
                         className="w-full h-full object-cover rounded-lg border border-base-300"
                     />
                     <button
                         onClick={removeImage}
                         className="btn btn-xs btn-circle btn-error absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                         type="button"
-                        aria-label="Remove image"
+                        aria-label={t("chatInput.removeImage")} // <--- Перевод
                     >
                         <X className="w-3 h-3" />
                     </button>
@@ -88,7 +92,7 @@ const MessageInput = () => {
                 <textarea
                     ref={textareaRef}
                     className="textarea textarea-bordered rounded-lg w-full text-sm resize-none overflow-y-auto flex-grow focus:textarea-primary focus-within:outline-none"
-                    placeholder="Type a message..."
+                    placeholder={t("chatInput.placeholder")} // <--- Перевод
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -99,8 +103,12 @@ const MessageInput = () => {
 
                 {/* Buttons Group */}
                 <div className="flex items-end flex-shrink-0">
-                    {/* Attach Image Button */}
-                    <div className="tooltip" data-tip="Attach image">
+                    <div
+                        className="tooltip"
+                        data-tip={t("chatInput.attachImage")}
+                    >
+                        {" "}
+                        {/* <--- Перевод */}
                         <button
                             type="button"
                             className={`btn btn-ghost btn-circle ${
@@ -130,11 +138,16 @@ const MessageInput = () => {
                         }`}
                     >
                         {showSendButton && (
-                            <div className="tooltip" data-tip="Send message">
+                            <div
+                                className="tooltip"
+                                data-tip={t("chatInput.sendMessage")}
+                            >
+                                {" "}
+                                {/* <--- Перевод */}
                                 <button
                                     type="submit"
                                     className="btn btn-primary btn-circle"
-                                    disabled={!showSendButton} // disable if not shown
+                                    disabled={!showSendButton}
                                 >
                                     {isSendingMessage ? (
                                         <span className="loading loading-spinner loading-xs"></span>
