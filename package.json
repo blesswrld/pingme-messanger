@@ -1,8 +1,21 @@
 {
-  "dependencies": {
-    "dotenv": "^16.5.0",
-    "i18next": "^25.2.1",
-    "i18next-browser-languagedetector": "^8.1.0",
-    "react-i18next": "^15.5.2"
-  }
+    "dependencies": {
+        "dotenv": "^16.5.0",
+        "i18next": "^25.2.1",
+        "i18next-browser-languagedetector": "^8.1.0",
+        "react-i18next": "^15.5.2"
+    },
+    "name": "pingme-messanger",
+    "version": "1.0.0",
+    "main": "index.js",
+    "devDependencies": {},
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+        "start": "npm run start --prefix backend"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": ""
 }
