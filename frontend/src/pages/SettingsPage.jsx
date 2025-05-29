@@ -1,5 +1,3 @@
-// Файл: SettingsPage.jsx
-import React from "react";
 import { THEMES } from "../constants";
 import { useThemeStore } from "../store/useThemeStore";
 import { useAuthStore } from "../store/useAuthStore";
@@ -8,8 +6,7 @@ import {
     Check,
     CheckCheck,
     Image as ImageIcon,
-    X as XIcon,
-} from "lucide-react"; // Переименовал иконки для ясности
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const chatBubbleBase =
@@ -48,39 +45,49 @@ const SettingsPage = () => {
                     </p>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                    {THEMES.map((themeOption) => (
-                        <button
-                            key={themeOption}
-                            className={`group relative flex flex-col items-center gap-2 p-2 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100 ${
-                                theme === themeOption
-                                    ? "bg-primary/5 ring-1 ring-primary"
-                                    : "hover:bg-base-200"
-                            }`}
-                            onClick={() => setTheme(themeOption)}
-                            aria-pressed={theme === themeOption}
-                        >
-                            <div
-                                className="h-8 w-full rounded-md overflow-hidden"
-                                data-theme={themeOption}
+                    {THEMES.map(
+                        (
+                            themeOption // themeOption - это ключ темы, например "light", "dark"
+                        ) => (
+                            <button
+                                key={themeOption}
+                                className={`group relative flex flex-col items-center gap-2 p-2 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100 ${
+                                    theme === themeOption
+                                        ? "bg-primary/5 ring-1 ring-primary"
+                                        : "hover:bg-base-200"
+                                }`}
+                                onClick={() => setTheme(themeOption)}
+                                aria-pressed={theme === themeOption}
                             >
-                                <div className="grid grid-cols-4 h-full">
-                                    <div className="bg-primary"></div>
-                                    <div className="bg-secondary"></div>
-                                    <div className="bg-accent"></div>
-                                    <div className="bg-neutral"></div>
+                                <div
+                                    className="h-8 w-full rounded-md overflow-hidden"
+                                    data-theme={themeOption} // data-theme остается ключом темы
+                                >
+                                    <div className="grid grid-cols-4 h-full">
+                                        <div className="bg-primary"></div>
+                                        <div className="bg-secondary"></div>
+                                        <div className="bg-accent"></div>
+                                        <div className="bg-neutral"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <span className="text-xs font-medium truncate w-full text-center">
-                                {themeOption.charAt(0).toUpperCase() +
-                                    themeOption.slice(1)}
-                            </span>
-                            {theme === themeOption && (
-                                <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center size-5 rounded-full bg-primary">
-                                    <Check className="size-3 text-primary-content" />
-                                </div>
-                            )}
-                        </button>
-                    ))}
+                                <span className="text-xs font-medium truncate w-full text-center">
+                                    {t(`settingsPage.themes.${themeOption}`, {
+                                        defaultValue:
+                                            themeOption
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                            themeOption.slice(1),
+                                    })}
+                                    {/* Используем t() для перевода названия темы. defaultValue на случай, если перевод отсутствует. */}
+                                </span>
+                                {theme === themeOption && (
+                                    <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center size-5 rounded-full bg-primary">
+                                        <Check className="size-3 text-primary-content" />
+                                    </div>
+                                )}
+                            </button>
+                        )
+                    )}
                 </div>
 
                 {/* --- Preview Section --- */}
@@ -95,11 +102,10 @@ const SettingsPage = () => {
                 <div className="rounded-xl overflow-hidden bg-base-200 shadow-sm">
                     {/* Preview Header */}
                     <div className="p-3 bg-base-100 flex items-center justify-between shrink-0 h-[65px]">
-                        {" "}
                         <div className="flex items-center gap-3 overflow-hidden">
                             <div className="relative shrink-0">
                                 <img
-                                    src={authUser?.profilePic || "/avatar.png"} // Используем аватар текущего пользователя или дефолтный
+                                    src={authUser?.profilePic || "/avatar.png"}
                                     alt={t("settingsPage.previewUserName")}
                                     className="size-10 object-cover rounded-full"
                                 />
@@ -184,26 +190,7 @@ const SettingsPage = () => {
                         })}
                     </div>
                     {/* Preview Input - стили как в MessageInput.jsx */}
-                    <div className="p-4  bg-base-100">
-                        {/* Пример превью изображения */}
-
-                        {/* <div className="mb-2 relative w-20 h-20 group">
-                            <img
-                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRL_VADb6NJ-w4Z6cwzqxRgZcILtXUb8cPTlQ&s"
-                                alt={t("chatInput.imagePreviewAlt", {
-                                    defaultValue: "Preview",
-                                })}
-                                className="w-full h-full object-cover rounded-lg"
-                            />
-                            <button
-                                className="btn btn-xs btn-circle btn-error absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                type="button"
-                                aria-label={t("chatInput.removeImage")}
-                            >
-                                <XIcon className="w-3 h-3" />
-                            </button>
-                        </div> */}
-
+                    <div className="p-4 bg-base-100">
                         <form
                             onSubmit={(e) => e.preventDefault()}
                             className="flex items-end gap-2"
@@ -211,12 +198,11 @@ const SettingsPage = () => {
                             <textarea
                                 className="textarea textarea-bordered rounded-lg w-full text-sm resize-none overflow-y-auto flex-grow focus:textarea-primary focus-within:outline-none"
                                 placeholder={t("chatInput.placeholder")}
-                                defaultValue={t(
-                                    "settingsPage.previewMessageValue"
-                                )} // Используем defaultValue для readOnly textarea
+                                value={t("settingsPage.previewMessageValue")}
                                 rows={1}
                                 style={{ maxHeight: "120px" }}
                                 readOnly
+                                onChange={() => {}} //
                             />
                             <div className="flex items-end flex-shrink-0">
                                 <div
@@ -225,13 +211,13 @@ const SettingsPage = () => {
                                 >
                                     <button
                                         type="button"
-                                        className="btn btn-ghost btn-circle text-base-content/50" // Стиль для неактивной кнопки
+                                        className="btn btn-ghost btn-circle text-base-content/50"
+                                        disabled
                                     >
                                         <ImageIcon className="w-5 h-5" />
                                     </button>
                                 </div>
                                 <div className="transition-opacity duration-200 opacity-100">
-                                    {" "}
                                     {/* Кнопка всегда видима в превью */}
                                     <div
                                         className="tooltip"
@@ -240,7 +226,7 @@ const SettingsPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-primary btn-circle"
-                                            disabled // Кнопка в превью неактивна
+                                            disabled
                                         >
                                             <SendIcon className="w-5 h-5" />
                                         </button>

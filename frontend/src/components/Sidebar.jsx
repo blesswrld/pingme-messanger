@@ -4,12 +4,14 @@ import { useAuthStore } from "../store/useAuthStore";
 import UserSearch from "./search/UserSearch";
 import useChatStore from "../store/useChatStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
+import { useTranslation } from "react-i18next";
 
 const MIN_WIDTH_LG = 200;
 const MAX_WIDTH_LG = 500;
 const DEFAULT_WIDTH_LG = 288;
 
 function SideBar() {
+    const { t } = useTranslation();
     const {
         conversationPartners,
         isContactsLoading,
@@ -40,7 +42,9 @@ function SideBar() {
     }, []);
 
     useEffect(() => {
-        fetchConversationPartners();
+        if (fetchConversationPartners) {
+            fetchConversationPartners();
+        }
     }, [fetchConversationPartners]);
 
     // ---  Фильтруем список контактов для отображения ---
@@ -126,7 +130,9 @@ function SideBar() {
                     {/* Заголовок */}
                     <div className="flex items-center gap-2 text-base-content/80 overflow-hidden flex-shrink-0">
                         <MessageSquare className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-md font-semibold">All Chats</span>
+                        <span className="text-md font-semibold">
+                            {t("sidebar.allChats")}
+                        </span>
                     </div>
                     {/* Правая часть: Счетчик и чекбокс */}
                     <div className="flex items-center gap-3 flex-shrink-0">
@@ -138,7 +144,7 @@ function SideBar() {
                                     : "text-base-content/60" // Динамический цвет
                             }`}
                         >
-                            {onlineCount} online
+                            {t("sidebar.onlineCounter", { count: onlineCount })}
                         </span>
                         {/* Чекбокс "Show online only" */}
                         <label className="label cursor-pointer p-0 justify-start gap-1.5">
@@ -151,7 +157,7 @@ function SideBar() {
                                 className="checkbox checkbox-primary checkbox-xs"
                             />
                             <span className="label-text text-xs text-base-content/70 whitespace-nowrap">
-                                Show online
+                                {t("sidebar.showOnline")}
                             </span>
                         </label>
                     </div>
@@ -185,7 +191,9 @@ function SideBar() {
                                                 partner.profilePic ||
                                                 "/avatar.png"
                                             }
-                                            alt={partner.fullName}
+                                            alt={t("sidebar.userProfileAlt", {
+                                                name: partner.fullName,
+                                            })}
                                         />
                                     </div>
                                 </div>
@@ -196,8 +204,8 @@ function SideBar() {
                                     </div>
                                     <div className="text-xs text-base-content/60">
                                         {onlineUsers.includes(partner._id)
-                                            ? "Online"
-                                            : "Offline"}
+                                            ? t("sidebar.statusOnline")
+                                            : t("sidebar.statusOffline")}
                                     </div>
                                 </div>
                             </button>
@@ -206,10 +214,10 @@ function SideBar() {
                         // --- Сообщение при пустом списке ---
                         <div className="text-center text-xs text-base-content/50 py-4 px-2 block">
                             {showOnlineOnly
-                                ? "No online users found."
+                                ? t("sidebar.noOnlineUsers")
                                 : conversationPartners.length === 0
-                                ? "Search for users to start chatting."
-                                : "No users match the current filter."}
+                                ? t("sidebar.searchToStart")
+                                : t("sidebar.noUsersMatchFilter")}
                         </div>
                     )}
                 </div>
@@ -219,7 +227,7 @@ function SideBar() {
             <div
                 className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize bg-transparent hover:bg-primary/20 active:bg-primary/30 transition-colors duration-150 z-10 hidden lg:block"
                 onMouseDown={memoizedStartResizing}
-                title="Resize sidebar"
+                title={t("sidebar.resizeHandleTitle")}
             />
         </aside>
     );

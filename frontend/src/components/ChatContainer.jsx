@@ -5,11 +5,12 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
+import { useTranslation } from "react-i18next";
 
 function ChatContainer() {
     const { messages, isMessagesLoading, selectedUser } = useChatStore();
-
     const { authUser } = useAuthStore();
+    const { t, i18n } = useTranslation();
     const messageEndRef = useRef(null);
 
     useEffect(() => {
@@ -20,13 +21,8 @@ function ChatContainer() {
         } else {
             useChatStore.setState({ messages: [], isMessagesLoading: false });
         }
-        // Если selectedUser сбрасывается, можно добавить логику очистки сообщений здесь
-        // else {
-        //    useChatStore.setState({ messages: [] });
-        // }
     }, [selectedUser?._id]);
 
-    // Эффект для скролла к последнему сообщению
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -72,7 +68,9 @@ function ChatContainer() {
                             {message.image && (
                                 <img
                                     src={message.image}
-                                    alt="Attachment"
+                                    alt={t("chat.attachmentAlt", {
+                                        defaultValue: "Attachment",
+                                    })}
                                     className="max-w-[200px] md:max-w-[250px] rounded-md mb-1.5 cursor-pointer"
                                     onClick={() =>
                                         window.open(message.image, "_blank")
@@ -87,7 +85,11 @@ function ChatContainer() {
                         </div>
                         <div className="chat-footer opacity-50 text-xs mt-1">
                             {message.createdAt
-                                ? formatMessageTime(message.createdAt)
+                                ? formatMessageTime(
+                                      message.createdAt,
+                                      t,
+                                      i18n.language
+                                  )
                                 : "..."}
                         </div>
                     </div>

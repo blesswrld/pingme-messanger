@@ -13,6 +13,20 @@
         "en": "English",
         "ru": "Русский"
     },
+    "sidebar": {
+        "allChats": "Все чаты",
+        "onlineCounter_one": "{{count}} в сети",
+        "onlineCounter_few": "{{count}} в сети",
+        "onlineCounter_many": "{{count}} в сети",
+        "showOnline": "Показать онлайн",
+        "noOnlineUsers": "Пользователи онлайн не найдены.",
+        "searchToStart": "Найдите пользователей, чтобы начать общение.",
+        "noUsersMatchFilter": "Нет пользователей, соответствующих фильтру.",
+        "userProfileAlt": "Фотография профиля {{name}}",
+        "statusOnline": "В сети",
+        "statusOffline": "Не в сети",
+        "resizeHandleTitle": "Изменить размер боковой панели"
+    },
     "chatHeader": {
         "backToChats": "Назад к чатам",
         "online": "В сети",
@@ -25,6 +39,23 @@
         "attachImage": "Прикрепить изображение",
         "sendMessage": "Отправить сообщение",
         "selectImageError": "Пожалуйста, выберите файл изображения"
+    },
+    "time": {
+        "today": "Сегодня",
+        "yesterday": "Вчера",
+        "ago": "назад",
+        "day_one": "день",
+        "day_few": "дня",
+        "day_many": "дней",
+        "week_one": "Неделю",
+        "week_few": "{{count}} недели",
+        "week_many": "{{count}} недель",
+        "month_one": "Месяц",
+        "month_few": "{{count}} месяца",
+        "month_many": "{{count}} месяцев",
+        "year_one": "Год",
+        "year_few": "{{count}} года",
+        "year_many": "{{count}} лет"
     },
     "profilePage": {
         "title": "Профиль",
@@ -82,6 +113,10 @@
         "usernameInvalidFormat": "Имя пользователя должно содержать от 3 до 30 символов, только буквы, цифры или дефис"
     },
     "settingsPage": {
+        "themes": {
+            "light": "Светлая",
+            "dark": "Тёмная"
+        },
         "themeTitle": "Тема",
         "themeSubtitle": "Выберите тему для вашего интерфейса чата.",
         "previewTitle": "Предпросмотр",

@@ -13,6 +13,18 @@
         "en": "English",
         "ru": "Русский"
     },
+    "sidebar": {
+        "allChats": "All Chats",
+        "onlineCounter": "{{count}} online",
+        "showOnline": "Show online",
+        "noOnlineUsers": "No online users found.",
+        "searchToStart": "Search for users to start chatting.",
+        "noUsersMatchFilter": "No users match the current filter.",
+        "userProfileAlt": "{{name}}'s profile picture",
+        "statusOnline": "Online",
+        "statusOffline": "Offline",
+        "resizeHandleTitle": "Resize sidebar"
+    },
     "chatHeader": {
         "backToChats": "Back to chats",
         "online": "Online",
@@ -25,6 +37,19 @@
         "attachImage": "Attach image",
         "sendMessage": "Send message",
         "selectImageError": "Please select an image file"
+    },
+    "time": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "ago": "ago",
+        "day_one": "day",
+        "day_other": "days",
+        "week_one": "A week",
+        "week_other": "{{count}} weeks",
+        "month_one": "A month",
+        "month_other": "{{count}} months",
+        "year_one": "A year",
+        "year_other": "{{count}} years"
     },
     "profilePage": {
         "title": "Profile",
@@ -82,6 +107,10 @@
         "usernameInvalidFormat": "Username must be 3 to 30 characters, containing only letters, numbers, or dash"
     },
     "settingsPage": {
+        "themes": {
+            "light": "Light",
+            "dark": "Dark"
+        },
         "themeTitle": "Theme",
         "themeSubtitle": "Choose a theme for your chat interface.",
         "previewTitle": "Preview",
