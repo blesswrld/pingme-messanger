@@ -33,7 +33,8 @@
         "backToChats": "Back to chats",
         "online": "Online",
         "offline": "Offline",
-        "closeChat": "Close chat"
+        "closeChat": "Close chat",
+        "viewProfile": "View {{name}}'s Profile"
     },
     "chatInput": {
         "placeholder": "Type a message...",
@@ -85,7 +86,11 @@
         "usernameLengthError": "Username must be between 3 and 30 characters.",
         "changePhoto": "Change",
         "sendMessage": "Send Message",
-        "noBioYet": "This user doesn't have any bio yet"
+        "noBioYet": "This user doesn't have any bio yet",
+        "yourProfileTitle": "Your Profile",
+        "yourProfileSubtitle": "Manage your personal information",
+        "userProfileTitle": "{{userName}}'s Profile",
+        "userProfileSubtitle": "Viewing user's public information"
     },
     "loginPage": {
         "welcomeBack": "Welcome Back",

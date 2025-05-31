@@ -14,7 +14,7 @@ import {
     CalendarDays,
     BadgeCheck,
     Send,
-    ArrowLeft, // Импортируем ArrowLeft
+    ArrowLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -169,7 +169,7 @@ const ProfilePage = () => {
     };
 
     const handleBackClick = () => {
-        navigate(-1); // Переход на предыдущую страницу
+        navigate(-1);
     };
 
     const isAnyLoading =
@@ -199,22 +199,31 @@ const ProfilePage = () => {
                 <div className="card-body p-0">
                     <div className="flex flex-col space-y-8">
                         {/* Кнопка Назад */}
-                        <div className="absolute top-4 left-4">
-                            <button
-                                className="btn btn-ghost btn-circle btn-sm"
-                                onClick={handleBackClick}
-                                aria-label={t("chatHeader.backToChats")}
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </button>
-                        </div>
+                        {!isViewingOwnProfile && (
+                            <div className="absolute top-4 left-4">
+                                <button
+                                    className="btn btn-ghost btn-circle btn-sm"
+                                    onClick={handleBackClick}
+                                    aria-label={t("chatHeader.backToChats")}
+                                >
+                                    <ArrowLeft className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
+                        {/* Конец кнопки Назад */}
 
                         <div className="flex flex-col items-center space-y-1">
                             <h1 className="text-2xl font-semibold text-base-content">
-                                {t("profilePage.title")}
+                                {isViewingOwnProfile
+                                    ? t("profilePage.yourProfileTitle")
+                                    : t("profilePage.userProfileTitle", {
+                                          userName: profileUserData.fullName,
+                                      })}
                             </h1>
                             <p className="text-sm text-base-content/70">
-                                {t("profilePage.subtitle")}
+                                {isViewingOwnProfile
+                                    ? t("profilePage.yourProfileSubtitle")
+                                    : t("profilePage.userProfileSubtitle")}
                             </p>
                         </div>
 

@@ -78,7 +78,7 @@ function ChatContainer() {
                                     alt={t("chat.attachmentAlt", {
                                         defaultValue: "Attachment",
                                     })}
-                                    className={`max-w-[300px] md:max-w-[350px] rounded-md mb-1.5 cursor-pointer ${
+                                    className={`rounded-md mb-1.5 cursor-pointer ${
                                         message.isSending ? "opacity-50" : ""
                                     }`}
                                     onClick={() =>
@@ -91,7 +91,7 @@ function ChatContainer() {
                                 <video
                                     src={message.video}
                                     controls
-                                    className={`max-w-[300px] md:max-w-[350px] rounded-md mb-1.5 bg-black ${
+                                    className={`rounded-md mb-1.5 bg-black ${
                                         message.isSending ? "opacity-50" : ""
                                     }`}
                                     onClick={(e) => {

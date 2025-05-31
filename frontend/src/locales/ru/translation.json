@@ -35,7 +35,8 @@
         "backToChats": "Назад к чатам",
         "online": "В сети",
         "offline": "Не в сети",
-        "closeChat": "Закрыть чат"
+        "closeChat": "Закрыть чат",
+        "viewProfile": "Профиль {{name}}"
     },
     "chatInput": {
         "placeholder": "Введите сообщение...",
@@ -91,7 +92,11 @@
         "usernameLengthError": "Имя пользователя должно быть от 3 до 30 символов.",
         "changePhoto": "Изменить",
         "sendMessage": "Отправить сообщение",
-        "noBioYet": "У этого пользователя нету описания"
+        "noBioYet": "У этого пользователя нету описания",
+        "yourProfileTitle": "Ваш профиль",
+        "yourProfileSubtitle": "Управление вашей личной информацией",
+        "userProfileTitle": "Профиль {{userName}}",
+        "userProfileSubtitle": "Публичная информация"
     },
     "loginPage": {
         "welcomeBack": "С возвращением!",
