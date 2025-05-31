@@ -49,14 +49,10 @@ export const sendMessage = async (req, res) => {
     const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
     const S3_ENDPOINT_URL = process.env.AWS_S3_ENDPOINT_URL;
 
-    console.log(
-        `[sendMessage] Request from ${senderId} to ${receiverId}. Text: ${
-            text ? "Yes" : "No"
-        }, Image: ${image ? "Yes" : "No"}, Video: ${video ? "Yes" : "No"}`
-    );
+    // console.log(`[sendMessage] Request from ${senderId} to ${receiverId}. Text: ${text ? "Yes" : "No"}, Image: ${image ? "Yes" : "No"}, Video: ${video ? "Yes" : "No"}`); // Меньше логов
 
     if (!senderId) {
-        console.error("[sendMessage] Error: Sender ID not found in request.");
+        // console.error("[sendMessage] Error: Sender ID not found in request."); // Меньше логов
         return res
             .status(401)
             .json({ error: "Unauthorized: Sender ID missing." });
@@ -70,24 +66,13 @@ export const sendMessage = async (req, res) => {
         });
     }
 
-    if (
-        video &&
-        (typeof video !== "string" || !video.startsWith("data:video/"))
-    ) {
-        console.log(
-            `[sendMessage] From ${senderId}: Invalid video format (expected base64 data URL).`
-        );
-        return res
-            .status(400)
-            .json({ error: "Invalid video format (must be base64 data URL)." });
-    }
-
+    // Критическая проверка S3 клиента и конфигурации
     if ((image || video) && (!s3Client || !BUCKET_NAME || !S3_ENDPOINT_URL)) {
         console.error(
             "[sendMessage] CRITICAL ERROR: S3 client or config missing for media upload."
         );
         return res.status(500).json({
-            error: "Server configuration error [S3] for media  upload.",
+            error: "Server configuration error [S3] for media upload.",
         });
     }
 
@@ -96,13 +81,12 @@ export const sendMessage = async (req, res) => {
 
     try {
         if (image) {
+            // Проверка Data URL формата изображения
             const matches = image.match(
                 /^data:image\/([A-Za-z-+/.=]+);base64,(.+)$/
             );
             if (!matches || matches.length !== 3) {
-                console.log(
-                    `[sendMessage] From ${senderId}: Invalid base64 format inside try-catch.`
-                );
+                // console.log(`[sendMessage] From ${senderId}: Invalid base64 image format.`); // Меньше логов
                 return res
                     .status(400)
                     .json({ error: "Invalid base64 image format" });
@@ -126,44 +110,19 @@ export const sendMessage = async (req, res) => {
                 ContentType: contentType,
             };
 
-            console.log(
-                `[sendMessage] From ${senderId}: Uploading image ${filename} to S3...`
-            );
+            // console.log(`[sendMessage] From ${senderId}: Uploading image ${filename} to S3...`); // Меньше логов
             const command = new PutObjectCommand(uploadParams);
             await s3Client.send(command);
             imageUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
         }
 
         if (video) {
-            console.log(`[sendMessage] Processing video...`);
-            console.log(`[sendMessage] Video string length: ${video.length}`);
-            // Логируем первые 100 символов строки video
-            console.log(
-                `[sendMessage] Video string starts with: ${video.substring(
-                    0,
-                    Math.min(video.length, 100)
-                )}`
+            // Проверка Data URL формата видео (упрощенная)
+            const matches = video.match(
+                /^data:video\/([^;]+);base64,(.+)$/ // Более широкое регулярное выражение для MIME-типа
             );
-            // Логируем последние 100 символов строки video (на случай обрезания)
-            console.log(
-                `[sendMessage] Video string ends with: ...${video.substring(
-                    Math.max(0, video.length - 100)
-                )}`
-            );
-
-            // --- ТОЛЬКО ЭТО ИЗМЕНЕНИЕ: более широкое регулярное выражение для MIME-типа ---
-            const regex = /^data:video\/([^;]+);base64,(.+)$/; // <-- ИЗМЕНЕНО
-            const matches = video.match(regex);
-            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
-
-            console.log(`[sendMessage] Regex matches result:`, matches);
-
             if (!matches || matches.length !== 3) {
-                console.log(
-                    `[sendMessage] From ${senderId}: Invalid base64 video format. Regex failed. Matches array length: ${
-                        matches?.length || 0
-                    }.`
-                );
+                // console.log(`[sendMessage] From ${senderId}: Invalid base64 video format.`); // Меньше логов
                 return res
                     .status(400)
                     .json({ error: "Invalid base64 video format" });
@@ -177,13 +136,6 @@ export const sendMessage = async (req, res) => {
                 .pop()
                 .split("+")[0];
 
-            console.log(
-                `[sendMessage] Extracted simpleVideoType: ${simpleVideoType}`
-            );
-            console.log(
-                `[sendMessage] Extracted fullMimeType for content type: ${fullMimeType}`
-            );
-
             const videoBuffer = Buffer.from(base64Data, "base64");
             const contentType = `video/${simpleVideoType}`;
             const filename = `messageVideos/${senderId}-${receiverId}/${uuidv4()}.${simpleVideoType}`;
@@ -195,30 +147,23 @@ export const sendMessage = async (req, res) => {
                 ContentType: contentType,
             };
 
-            console.log(
-                `[sendMessage] From ${senderId}: Uploading video ${filename} to S3 with contentType ${contentType}...`
-            );
+            // console.log(`[sendMessage] From ${senderId}: Uploading video ${filename} to S3 with contentType ${contentType}...`); // Меньше логов
             const command = new PutObjectCommand(uploadParams);
             await s3Client.send(command);
             videoUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
-            console.log(`[sendMessage] Video uploaded. URL: ${videoUrl}`);
         }
 
-        console.log(
-            `[sendMessage] From ${senderId} to ${receiverId}: Saving message to DB...`
-        );
+        // console.log(`[sendMessage] From ${senderId} to ${receiverId}: Saving message to DB...`); // Меньше логов
         const newMessage = new Message({
-            senderId,
-            receiverId,
+            senderId: senderId.toString(),
+            receiverId: receiverId.toString(),
             text: text || "",
             image: imageUrl,
             video: videoUrl,
         });
 
         await newMessage.save();
-        console.log(
-            `[sendMessage] From ${senderId} to ${receiverId}: Message saved successfully.`
-        );
+        // console.log(`[sendMessage] From ${senderId} to ${receiverId}: Message saved successfully.`); // Меньше логов
 
         const receiverSocketId = getReceiverSocketId(receiverId);
         if (receiverSocketId) {
@@ -233,7 +178,7 @@ export const sendMessage = async (req, res) => {
         console.error("Stack:", error.stack);
 
         const statusCode =
-            error.message?.includes("base64") ||
+            error.message?.includes("base64") || // Это условие оставим для 400 при некорректном base64
             error.message?.includes("format")
                 ? 400
                 : error.$metadata?.httpStatusCode || 500;

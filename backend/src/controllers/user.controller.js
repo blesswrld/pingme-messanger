@@ -103,7 +103,7 @@ export const getConversationPartners = async (req, res) => {
 
             return {
                 ...partner,
-                _id: partner._id.toString(), // Убедиться, что _id партнера - строка
+                _id: partner._id.toString(),
                 lastMessage: latestMsgData || null,
             };
         });

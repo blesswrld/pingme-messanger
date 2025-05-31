@@ -99,8 +99,11 @@ export const useChatStore = create((set, get) => ({
             }
         } catch (error) {
             console.error("Error sending message:", error);
+            // Более детальный вывод ошибки для пользователя
             const errorMessage =
-                error.response?.data?.message || "Failed to send message";
+                error.response?.data?.error || // Сначала ищем 'error' поле из бэкенда
+                error.response?.data?.message || // Затем 'message' поле
+                "Failed to send message."; // Дефолтное сообщение
             toast.error(errorMessage);
         } finally {
             set({ isSendingMessage: false });
@@ -150,7 +153,6 @@ export const useChatStore = create((set, get) => ({
             });
 
             // 2. ВСЕГДА ВЫЗЫВАЕМ fetchConversationPartners для обновления сайдбара
-            // Это гарантирует, что предпросмотр сообщения обновится и порядок чатов будет корректным
             console.log(
                 "Triggering full contacts refetch to update sidebar preview for ALL messages."
             );

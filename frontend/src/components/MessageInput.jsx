@@ -31,11 +31,10 @@ const MessageInput = () => {
         if (videoFileInputRef.current) videoFileInputRef.current.value = "";
     };
 
-    // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ handleMediaChange ---
     const handleMediaChange = (e, type) => {
         const file = e.target.files[0];
         if (!file) {
-            clearMedia(); // Очищаем превью, если файл не выбран
+            clearMedia();
             return;
         }
 
@@ -48,8 +47,8 @@ const MessageInput = () => {
                     }Error`
                 )
             );
-            e.target.value = ""; // Очищаем input
-            clearMedia(); // Убеждаемся, что превью очищены
+            e.target.value = "";
+            clearMedia();
             return;
         }
 
@@ -71,21 +70,20 @@ const MessageInput = () => {
                 t("chatInput.videoTooLarge", { size: MAX_VIDEO_SIZE_MB })
             );
             e.target.value = "";
-            clearMedia(); // Очищаем превью
+            clearMedia();
             return;
         }
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            // --- ЭТО КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Условное присвоение ---
+            // --- словное присвоение ---
             if (type === "image") {
                 setImagePreview(reader.result);
-                setVideoPreview(null); // Убеждаемся, что видео-превью пусто
+                setVideoPreview(null);
             } else if (type === "video") {
                 setVideoPreview(reader.result);
-                setImagePreview(null); // Убеждаемся, что изображение-превью пусто
+                setImagePreview(null);
             }
-            // --- Конец исправления ---
             console.log(`[DEBUG: handleMediaChange] Set ${type} preview.`);
             console.log(
                 `[DEBUG: handleMediaChange] imagePreview is now: ${!!imagePreview}`
@@ -96,7 +94,6 @@ const MessageInput = () => {
         };
         reader.readAsDataURL(file);
     };
-    // --- КОНЕЦ ИСПРАВЛЕННОЙ ФУНКЦИИ ---
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -126,13 +123,7 @@ const MessageInput = () => {
         }
         console.log("----------------------------");
 
-        // Убедимся, что отправляем только один тип медиа
-        await sendMessage(
-            selectedUser._id,
-            text,
-            imagePreview, // Это будет null, если выбрано видео
-            videoPreview // Это будет null, если выбрано изображение
-        );
+        await sendMessage(selectedUser._id, text, imagePreview, videoPreview);
 
         setText("");
         clearMedia();

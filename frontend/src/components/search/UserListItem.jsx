@@ -1,15 +1,18 @@
 import React from "react";
-import useChatStore from "../../store/useChatStore";
+// import useChatStore from "../../store/useChatStore";
 import { useTranslation } from "react-i18next";
 
 const UserListItem = ({ user, onUserSelect }) => {
-    const { setSelectedUser } = useChatStore();
+    // Получаем весь объект состояния из useChatStore
+    // const chatStore = useChatStore();
     const { t } = useTranslation();
 
     const handleClick = () => {
-        setSelectedUser(user);
+        // Убрал setSelectedUser(user) отсюда, так как UserSearch.jsx уже вызывает navigate на профиль.
+        // Если вы хотите, чтобы при клике на пользователя в поиске он сразу открывался в чате,
+        // то можете вернуть chatStore.setSelectedUser(user) и убрать navigate(`/profile/${user._id}`) в UserSearch.
         if (onUserSelect) {
-            onUserSelect();
+            onUserSelect(user);
         }
     };
 
