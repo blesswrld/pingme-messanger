@@ -14,9 +14,15 @@ const messageSchema = new mongoose.Schema(
         },
         text: {
             type: String,
+            default: "",
         },
         image: {
             type: String,
+        },
+        video: {
+            // <<< НОВОЕ ПОЛЕ ДЛЯ ВИДЕО
+            type: String,
+            default: null,
         },
     },
     { timestamps: true }

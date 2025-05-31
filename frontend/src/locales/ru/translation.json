@@ -38,7 +38,14 @@
         "removeImage": "Удалить изображение",
         "attachImage": "Прикрепить изображение",
         "sendMessage": "Отправить сообщение",
-        "selectImageError": "Пожалуйста, выберите файл изображения"
+        "selectImageError": "Выберите файл изображения",
+        "selectVideoError": "Выберите файл видео",
+        "videoTooLarge": "Видеофайл слишком большой (макс. {{size}}MB).",
+        "removeMedia": "Удалить медиа",
+        "attachVideo": "Прикрепить видео"
+    },
+    "chat": {
+        "attachmentAlt": "Вложение"
     },
     "time": {
         "today": "Сегодня",

@@ -11,6 +11,7 @@ export const useChatStore = create((set, get) => ({
     isMessagesLoading: false,
     conversationPartners: [], // Список собеседников, загружаемый с бэка
     isContactsLoading: false, // Флаг загрузки собеседников
+    isSendingMessage: false,
 
     // Функция для загрузки собеседников
     fetchConversationPartners: async () => {
@@ -45,9 +46,15 @@ export const useChatStore = create((set, get) => ({
         }
     },
 
-    sendMessage: async (recipientId, text, image = null) => {
+    sendMessage: async (recipientId, text, image = null, video = null) => {
+        set({ isSendingMessage: true });
         try {
-            const messageData = { text, image };
+            if (!text && !image && !video) {
+                toast.error("Message cannot be empty.");
+                return;
+            }
+
+            const messageData = { text, image, video };
             const res = await axiosInstance.post(
                 `/messages/send/${recipientId}`,
                 messageData
@@ -87,6 +94,8 @@ export const useChatStore = create((set, get) => ({
             const errorMessage =
                 error.response?.data?.message || "Failed to send message";
             toast.error(errorMessage);
+        } finally {
+            set({ isSendingMessage: false });
         }
     },
 
@@ -109,7 +118,7 @@ export const useChatStore = create((set, get) => ({
                 newMessage?._id &&
                 selectedUser &&
                 (newMessage.senderId === selectedUser._id ||
-                    newMessage.recipientId === selectedUser._id)
+                    newMessage.receiverId === selectedUser._id)
             ) {
                 const messageExists = messages.some(
                     (msg) => msg._id === newMessage._id

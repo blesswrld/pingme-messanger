@@ -45,14 +45,14 @@ export const getMessages = async (req, res) => {
 export const sendMessage = async (req, res) => {
     const senderId = req.user?._id;
     const { id: receiverId } = req.params;
-    const { text, image } = req.body;
+    const { text, image, video } = req.body;
     const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
     const S3_ENDPOINT_URL = process.env.AWS_S3_ENDPOINT_URL;
 
     console.log(
         `[sendMessage] Request from ${senderId} to ${receiverId}. Text: ${
             text ? "Yes" : "No"
-        }, Image: ${image ? "Yes" : "No"}`
+        }, Image: ${image ? "Yes" : "No"}, Video: ${video ? "Yes" : "No"}`
     );
 
     if (!senderId) {
@@ -64,33 +64,35 @@ export const sendMessage = async (req, res) => {
     if (!receiverId) {
         return res.status(400).json({ error: "Receiver ID is missing." });
     }
-    if (!text && !image) {
+    if (!text && !image && !video) {
         return res.status(400).json({
-            error: "Message cannot be empty (text or image required).",
+            error: "Message cannot be empty (text, image, or video required).",
         });
     }
 
     if (
-        image &&
-        (typeof image !== "string" || !image.startsWith("data:image/"))
+        video &&
+        (typeof video !== "string" || !video.startsWith("data:video/"))
     ) {
         console.log(
-            `[sendMessage] From ${senderId}: Invalid image format (expected base64 data URL).`
+            `[sendMessage] From ${senderId}: Invalid video format (expected base64 data URL).`
         );
         return res
             .status(400)
-            .json({ error: "Invalid image format (must be base64 data URL)." });
+            .json({ error: "Invalid video format (must be base64 data URL)." });
     }
-    if (image && (!s3Client || !BUCKET_NAME || !S3_ENDPOINT_URL)) {
+
+    if ((image || video) && (!s3Client || !BUCKET_NAME || !S3_ENDPOINT_URL)) {
         console.error(
-            "[sendMessage] CRITICAL ERROR: S3 client or config missing for image upload."
+            "[sendMessage] CRITICAL ERROR: S3 client or config missing for media upload."
         );
         return res.status(500).json({
-            error: "Server configuration error [S3] for image upload.",
+            error: "Server configuration error [S3] for media  upload.",
         });
     }
 
     let imageUrl = undefined;
+    let videoUrl = undefined;
 
     try {
         if (image) {
@@ -132,6 +134,76 @@ export const sendMessage = async (req, res) => {
             imageUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
         }
 
+        if (video) {
+            console.log(`[sendMessage] Processing video...`);
+            console.log(`[sendMessage] Video string length: ${video.length}`);
+            // Логируем первые 100 символов строки video
+            console.log(
+                `[sendMessage] Video string starts with: ${video.substring(
+                    0,
+                    Math.min(video.length, 100)
+                )}`
+            );
+            // Логируем последние 100 символов строки video (на случай обрезания)
+            console.log(
+                `[sendMessage] Video string ends with: ...${video.substring(
+                    Math.max(0, video.length - 100)
+                )}`
+            );
+
+            // --- ТОЛЬКО ЭТО ИЗМЕНЕНИЕ: более широкое регулярное выражение для MIME-типа ---
+            const regex = /^data:video\/([^;]+);base64,(.+)$/; // <-- ИЗМЕНЕНО
+            const matches = video.match(regex);
+            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
+
+            console.log(`[sendMessage] Regex matches result:`, matches);
+
+            if (!matches || matches.length !== 3) {
+                console.log(
+                    `[sendMessage] From ${senderId}: Invalid base64 video format. Regex failed. Matches array length: ${
+                        matches?.length || 0
+                    }.`
+                );
+                return res
+                    .status(400)
+                    .json({ error: "Invalid base64 video format" });
+            }
+
+            const fullMimeType = matches[1];
+            const base64Data = matches[2];
+            const simpleVideoType = fullMimeType
+                .split(";")[0]
+                .split("/")
+                .pop()
+                .split("+")[0];
+
+            console.log(
+                `[sendMessage] Extracted simpleVideoType: ${simpleVideoType}`
+            );
+            console.log(
+                `[sendMessage] Extracted fullMimeType for content type: ${fullMimeType}`
+            );
+
+            const videoBuffer = Buffer.from(base64Data, "base64");
+            const contentType = `video/${simpleVideoType}`;
+            const filename = `messageVideos/${senderId}-${receiverId}/${uuidv4()}.${simpleVideoType}`;
+
+            const uploadParams = {
+                Bucket: BUCKET_NAME,
+                Key: filename,
+                Body: videoBuffer,
+                ContentType: contentType,
+            };
+
+            console.log(
+                `[sendMessage] From ${senderId}: Uploading video ${filename} to S3 with contentType ${contentType}...`
+            );
+            const command = new PutObjectCommand(uploadParams);
+            await s3Client.send(command);
+            videoUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
+            console.log(`[sendMessage] Video uploaded. URL: ${videoUrl}`);
+        }
+
         console.log(
             `[sendMessage] From ${senderId} to ${receiverId}: Saving message to DB...`
         );
@@ -140,6 +212,7 @@ export const sendMessage = async (req, res) => {
             receiverId,
             text: text || "",
             image: imageUrl,
+            video: videoUrl,
         });
 
         await newMessage.save();

@@ -77,6 +77,21 @@ function ChatContainer() {
                                     }
                                 />
                             )}
+                            {message.video && (
+                                <video
+                                    src={message.video}
+                                    controls
+                                    className="max-w-[200px] md:max-w-[250px] rounded-md mb-1.5 bg-black"
+                                    onClick={(e) => {
+                                        if (e.target.tagName !== "VIDEO") {
+                                            window.open(
+                                                message.video,
+                                                "_blank"
+                                            );
+                                        }
+                                    }}
+                                />
+                            )}
                             {message.text && (
                                 <p className="text-sm break-words whitespace-pre-wrap">
                                     {message.text}

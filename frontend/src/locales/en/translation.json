@@ -36,7 +36,14 @@
         "removeImage": "Remove image",
         "attachImage": "Attach image",
         "sendMessage": "Send message",
-        "selectImageError": "Please select an image file"
+        "selectImageError": "Please select an image file",
+        "selectVideoError": "Please select a video file.",
+        "videoTooLarge": "Video file is too large (max {{size}}MB).",
+        "removeMedia": "Remove Media",
+        "attachVideo": "Attach Video"
+    },
+    "chat": {
+        "attachmentAlt": "Attachment"
     },
     "time": {
         "today": "Today",

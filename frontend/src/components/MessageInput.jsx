@@ -1,14 +1,16 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { Image, Send, X } from "lucide-react";
+import { Image, Send, Video, X } from "lucide-react";
 import toast from "react-hot-toast";
-import { useTranslation } from "react-i18next"; // <--- Импортируем
+import { useTranslation } from "react-i18next";
 
 const MessageInput = () => {
-    const { t } = useTranslation(); // <--- Получаем t
+    const { t } = useTranslation();
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
-    const fileInputRef = useRef(null);
+    const [videoPreview, setVideoPreview] = useState(null);
+    const imageFileInputRef = useRef(null);
+    const videoFileInputRef = useRef(null);
     const textareaRef = useRef(null);
     const { sendMessage, selectedUser, isSendingMessage } = useChatStore();
 
@@ -21,36 +23,119 @@ const MessageInput = () => {
         }
     }, [text]);
 
-    const handleImageChange = (e) => {
+    const clearMedia = () => {
+        setImagePreview(null);
+        setVideoPreview(null);
+
+        if (imageFileInputRef.current) imageFileInputRef.current.value = "";
+        if (videoFileInputRef.current) videoFileInputRef.current.value = "";
+    };
+
+    // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ handleMediaChange ---
+    const handleMediaChange = (e, type) => {
         const file = e.target.files[0];
-        if (!file) return;
-        if (!file.type.startsWith("image/")) {
-            toast.error(t("chatInput.selectImageError")); // <--- Перевод
+        if (!file) {
+            clearMedia(); // Очищаем превью, если файл не выбран
+            return;
+        }
+
+        // Строгая проверка типа файла
+        if (!file.type.startsWith(type + "/")) {
+            toast.error(
+                t(
+                    `chatInput.select${
+                        type === "image" ? "Image" : "Video"
+                    }Error`
+                )
+            );
+            e.target.value = ""; // Очищаем input
+            clearMedia(); // Убеждаемся, что превью очищены
+            return;
+        }
+
+        // Очищаем другое медиа, если пользователь выбирает новый тип
+        if (type === "image") {
+            setVideoPreview(null);
+            if (videoFileInputRef.current) videoFileInputRef.current.value = "";
+        } else if (type === "video") {
+            // Используем else if для ясности
+            setImagePreview(null);
+            if (imageFileInputRef.current) imageFileInputRef.current.value = "";
+        }
+
+        const MAX_VIDEO_SIZE_MB = 25;
+        const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
+
+        if (type === "video" && file.size > MAX_VIDEO_SIZE_BYTES) {
+            toast.error(
+                t("chatInput.videoTooLarge", { size: MAX_VIDEO_SIZE_MB })
+            );
+            e.target.value = "";
+            clearMedia(); // Очищаем превью
             return;
         }
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            setImagePreview(reader.result);
+            // --- ЭТО КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Условное присвоение ---
+            if (type === "image") {
+                setImagePreview(reader.result);
+                setVideoPreview(null); // Убеждаемся, что видео-превью пусто
+            } else if (type === "video") {
+                setVideoPreview(reader.result);
+                setImagePreview(null); // Убеждаемся, что изображение-превью пусто
+            }
+            // --- Конец исправления ---
+            console.log(`[DEBUG: handleMediaChange] Set ${type} preview.`);
+            console.log(
+                `[DEBUG: handleMediaChange] imagePreview is now: ${!!imagePreview}`
+            );
+            console.log(
+                `[DEBUG: handleMediaChange] videoPreview is now: ${!!videoPreview}`
+            );
         };
         reader.readAsDataURL(file);
     };
-
-    const removeImage = () => {
-        setImagePreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-    };
+    // --- КОНЕЦ ИСПРАВЛЕННОЙ ФУНКЦИИ ---
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        const canSend = (text.trim() || imagePreview) && !isSendingMessage;
+        const canSend =
+            (text.trim() || imagePreview || videoPreview) && !isSendingMessage;
         if (!canSend || !selectedUser) return;
 
-        await sendMessage(selectedUser._id, text, imagePreview);
+        console.log("--- DEBUG: Sending Message ---");
+        console.log("Text:", text);
+        console.log("Image Preview (exists):", !!imagePreview);
+        console.log("Video Preview (exists):", !!videoPreview);
+        if (imagePreview) {
+            console.log(
+                "Image Preview (first 50 chars):",
+                imagePreview.substring(0, 50),
+                "..."
+            );
+            console.log("Image Preview Length:", imagePreview.length);
+        }
+        if (videoPreview) {
+            console.log(
+                "Video Preview (first 50 chars):",
+                videoPreview.substring(0, 50),
+                "..."
+            );
+            console.log("Video Preview Length:", videoPreview.length);
+        }
+        console.log("----------------------------");
+
+        // Убедимся, что отправляем только один тип медиа
+        await sendMessage(
+            selectedUser._id,
+            text,
+            imagePreview, // Это будет null, если выбрано видео
+            videoPreview // Это будет null, если выбрано изображение
+        );
 
         setText("");
-        setImagePreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        clearMedia();
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto";
         }
@@ -63,24 +148,32 @@ const MessageInput = () => {
         }
     };
 
-    const showSendButton = (text.trim() || imagePreview) && !isSendingMessage;
+    const showSendButton =
+        (text.trim() || imagePreview || videoPreview) && !isSendingMessage;
 
     return (
         <div className="p-4 border-t border-base-300 bg-base-100 md:bg-base-200 md:rounded-br-lg">
-            {imagePreview && (
-                <div className="mb-2 relative w-20 h-20 group">
-                    <img
-                        src={imagePreview}
-                        alt={t("chatInput.imagePreviewAlt", {
-                            defaultValue: "Preview",
-                        })} // <--- Добавьте ключ chatInput.imagePreviewAlt
-                        className="w-full h-full object-cover rounded-lg border border-base-300"
-                    />
+            {(imagePreview || videoPreview) && (
+                <div className="mb-2 relative w-32 h-32 group flex items-center justify-center rounded-lg border border-base-300 overflow-hidden">
+                    {imagePreview && (
+                        <img
+                            src={imagePreview}
+                            alt={t("chatInput.imagePreviewAlt")}
+                            className="w-full h-full object-cover"
+                        />
+                    )}
+                    {videoPreview && (
+                        <video
+                            src={videoPreview}
+                            controls
+                            className="w-full h-full object-contain bg-black"
+                        />
+                    )}
                     <button
-                        onClick={removeImage}
-                        className="btn btn-xs btn-circle btn-error absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={clearMedia}
+                        className="btn btn-xs btn-error absolute -top-0.5 -right-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                         type="button"
-                        aria-label={t("chatInput.removeImage")} // <--- Перевод
+                        aria-label={t("chatInput.removeMedia")}
                     >
                         <X className="w-3 h-3" />
                     </button>
@@ -92,7 +185,7 @@ const MessageInput = () => {
                 <textarea
                     ref={textareaRef}
                     className="textarea textarea-bordered rounded-lg w-full text-sm resize-none overflow-y-auto flex-grow focus:textarea-primary focus-within:outline-none"
-                    placeholder={t("chatInput.placeholder")} // <--- Перевод
+                    placeholder={t("chatInput.placeholder")}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -103,6 +196,7 @@ const MessageInput = () => {
 
                 {/* Buttons Group */}
                 <div className="flex items-end flex-shrink-0">
+                    {/* Кнопка прикрепления изображения */}
                     <div
                         className="tooltip"
                         data-tip={t("chatInput.attachImage")}
@@ -116,8 +210,8 @@ const MessageInput = () => {
                                     ? "text-primary"
                                     : "text-base-content/50"
                             }`}
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isSendingMessage}
+                            onClick={() => imageFileInputRef.current?.click()}
+                            disabled={isSendingMessage || videoPreview}
                         >
                             <Image className="w-5 h-5" />
                         </button>
@@ -126,9 +220,36 @@ const MessageInput = () => {
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        disabled={isSendingMessage}
+                        ref={imageFileInputRef}
+                        onChange={(e) => handleMediaChange(e, "image")}
+                        disabled={isSendingMessage || videoPreview}
+                    />
+
+                    {/* Video Button */}
+                    <div
+                        className="tooltip"
+                        data-tip={t("chatInput.attachVideo")}
+                    >
+                        <button
+                            type="button"
+                            className={`btn btn-ghost btn-circle ${
+                                videoPreview
+                                    ? "text-primary"
+                                    : "text-base-content/50"
+                            }`}
+                            onClick={() => videoFileInputRef.current?.click()}
+                            disabled={isSendingMessage || imagePreview}
+                        >
+                            <Video className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        ref={videoFileInputRef}
+                        onChange={(e) => handleMediaChange(e, "video")}
+                        disabled={isSendingMessage || imagePreview}
                     />
 
                     {/* Send Button - Conditional Rendering */}
