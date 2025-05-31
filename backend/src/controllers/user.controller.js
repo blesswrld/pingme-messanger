@@ -40,46 +40,85 @@ export const getConversationPartners = async (req, res) => {
             return res.status(401).json({ message: "User not authenticated." });
         }
         const currentUserId = req.user._id;
-        const currentUserIdStr = currentUserId.toString();
-        // 1. Находим все сообщения, где текущий пользователь - отправитель или получатель
-        const messages = await Message.find({
-            $or: [{ senderId: currentUserId }, { receiverId: currentUserId }],
-        })
-            .select("senderId receiverId")
-            .lean(); // .lean() для производительности
 
-        // 2. Собираем уникальные ID собеседников
-        const partnersIds = new Set();
-        messages.forEach((msg) => {
-            // Проверяем senderId: существует ли и не является ли ID текущего пользователя
-            if (msg.senderId && msg.senderId.toString() !== currentUserIdStr) {
-                partnersIds.add(msg.senderId.toString());
-            }
-            // Проверяем receiverId: существует ли и не является ли ID текущего пользователя
-            if (
-                msg.receiverId &&
-                msg.receiverId.toString() !== currentUserIdStr
-            ) {
-                partnersIds.add(msg.receiverId.toString());
-            }
-        });
+        // Агрегация для нахождения последнего сообщения для каждой уникальной беседы
+        const latestMessages = await Message.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { senderId: currentUserId },
+                        { receiverId: currentUserId },
+                    ],
+                },
+            },
+            {
+                $sort: { createdAt: -1 },
+            },
+            {
+                $group: {
+                    _id: {
+                        $cond: {
+                            if: { $eq: ["$senderId", currentUserId] },
+                            then: "$receiverId",
+                            else: "$senderId",
+                        },
+                    },
+                    lastMessage: { $first: "$$ROOT" },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    // Преобразуем ObjectId в строку явно на этапе агрегации
+                    partnerId: { $toString: "$_id" },
+                    lastMessage: {
+                        _id: { $toString: "$lastMessage._id" },
+                        senderId: { $toString: "$lastMessage.senderId" },
+                        receiverId: { $toString: "$lastMessage.receiverId" },
+                        text: "$lastMessage.text",
+                        image: "$lastMessage.image",
+                        video: "$lastMessage.video",
+                        createdAt: "$lastMessage.createdAt",
+                    },
+                },
+            },
+        ]);
 
-        // 3. Преобразуем Set в массив ID
-        const uniquePartnerIds = Array.from(partnersIds);
+        const partnerIds = latestMessages.map((item) => item.partnerId);
 
-        // Если нет ID партнеров, возвращаем пустой массив
-        if (uniquePartnerIds.length === 0) {
+        if (partnerIds.length === 0) {
             return res.status(200).json([]);
         }
 
-        // 4. Находим полные данные пользователей по этим ID
         const partners = await User.find({
-            _id: { $in: uniquePartnerIds },
+            _id: { $in: partnerIds },
         })
             .select("fullName profilePic _id")
-            .lean(); // .lean() для производительности
+            .lean();
 
-        res.status(200).json(partners);
+        const conversationData = partners.map((partner) => {
+            const latestMsgData = latestMessages.find(
+                (msg) => msg.partnerId === partner._id.toString()
+            )?.lastMessage;
+
+            return {
+                ...partner,
+                _id: partner._id.toString(), // Убедиться, что _id партнера - строка
+                lastMessage: latestMsgData || null,
+            };
+        });
+
+        conversationData.sort((a, b) => {
+            const dateA = a.lastMessage?.createdAt
+                ? new Date(a.lastMessage.createdAt)
+                : new Date(0);
+            const dateB = b.lastMessage?.createdAt
+                ? new Date(b.lastMessage.createdAt)
+                : new Date(0);
+            return dateB.getTime() - dateA.getTime();
+        });
+
+        res.status(200).json(conversationData);
     } catch (error) {
         console.error(
             "Error in getConversationPartners controller:",

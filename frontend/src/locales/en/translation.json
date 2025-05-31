@@ -23,7 +23,11 @@
         "userProfileAlt": "{{name}}'s profile picture",
         "statusOnline": "Online",
         "statusOffline": "Offline",
-        "resizeHandleTitle": "Resize sidebar"
+        "resizeHandleTitle": "Resize sidebar",
+        "noMessagesYet": "No messages yet..",
+        "you": "You",
+        "sentImage": "Sent an image",
+        "sentVideo": "Sent a video"
     },
     "chatHeader": {
         "backToChats": "Back to chats",

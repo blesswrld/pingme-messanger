@@ -25,7 +25,11 @@
         "userProfileAlt": "Фотография профиля {{name}}",
         "statusOnline": "В сети",
         "statusOffline": "Не в сети",
-        "resizeHandleTitle": "Изменить размер боковой панели"
+        "resizeHandleTitle": "Изменить размер боковой панели",
+        "noMessagesYet": "Сообщений пока что нету..",
+        "you": "Вы",
+        "sentImage": "Отправил(а) фото",
+        "sentVideo": "Отправил(а) видео"
     },
     "chatHeader": {
         "backToChats": "Назад к чатам",

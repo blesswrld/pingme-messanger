@@ -5,12 +5,10 @@ import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore = create((set, get) => ({
     messages: [],
-    // users: [],
     selectedUser: null,
-    // isUsersLoading: false,
     isMessagesLoading: false,
-    conversationPartners: [], // Список собеседников, загружаемый с бэка
-    isContactsLoading: false, // Флаг загрузки собеседников
+    conversationPartners: [],
+    isContactsLoading: false,
     isSendingMessage: false,
 
     // Функция для загрузки собеседников
@@ -24,7 +22,7 @@ export const useChatStore = create((set, get) => ({
             const errorMessage =
                 error.response?.data?.message || "Failed to load contacts";
             toast.error(errorMessage);
-            set({ conversationPartners: [] }); // В случае ошибки сбрасываем в пустой массив
+            set({ conversationPartners: [] });
         } finally {
             set({ isContactsLoading: false });
         }
@@ -63,25 +61,35 @@ export const useChatStore = create((set, get) => ({
             if (newMessage?._id) {
                 set((state) => {
                     const updatedMessages = [...state.messages, newMessage];
-                    return { messages: updatedMessages };
+                    const updatedPartners = [...state.conversationPartners];
+                    const recipientIdStr = recipientId.toString();
+                    const sentToPartnerIndex = updatedPartners.findIndex(
+                        (partner) => partner._id.toString() === recipientIdStr
+                    );
+
+                    if (sentToPartnerIndex > -1) {
+                        const existingPartner = {
+                            ...updatedPartners[sentToPartnerIndex],
+                            lastMessage: newMessage,
+                        };
+                        updatedPartners.splice(sentToPartnerIndex, 1);
+                        updatedPartners.unshift(existingPartner);
+                    } else {
+                        console.log(
+                            "New conversation partner detected (on send), initiating full contacts refetch."
+                        );
+                        get().fetchConversationPartners();
+                        return { messages: updatedMessages };
+                    }
+                    return {
+                        messages: updatedMessages,
+                        conversationPartners: updatedPartners,
+                    };
                 });
                 console.log(
                     "ChatStore state updated with new message:",
                     newMessage._id
                 );
-
-                // Обновляем список контактов после отправки
-                const partners = get().conversationPartners;
-                const isNewPartner = !partners.some(
-                    (p) => p._id === recipientId
-                );
-                if (isNewPartner) {
-                    console.log(
-                        "New conversation partner detected, refetching contacts..."
-                    );
-                    get().fetchConversationPartners();
-                }
-                // --- Конец опционального обновления ---
             } else {
                 console.error(
                     "sendMessage: Invalid response data received from server",
@@ -105,61 +113,56 @@ export const useChatStore = create((set, get) => ({
         const socket = useAuthStore.getState().socket;
         if (!socket || !socket.connected) {
             console.warn(
-                "Socket not available or not connected in useAuthStore for subscribing"
+                "Socket not available or not connected for subscribing."
             );
             return () => {};
         }
+
         const handleNewMessage = (newMessage) => {
-            console.log("Socket received newMessage:", newMessage);
-            const { selectedUser, messages, conversationPartners } = get(); // Добавили conversationPartners
+            console.log("--- Socket newMessage DEBUG (Final Attempt) ---");
+            console.log(
+                "Incoming New Message (Raw):",
+                JSON.stringify(newMessage, null, 2)
+            );
 
-            // Добавляем сообщение в текущий чат, если он открыт
-            if (
-                newMessage?._id &&
-                selectedUser &&
-                (newMessage.senderId === selectedUser._id ||
-                    newMessage.receiverId === selectedUser._id)
-            ) {
-                const messageExists = messages.some(
-                    (msg) => msg._id === newMessage._id
-                );
-                if (!messageExists) {
-                    set((state) => {
-                        const updatedMessages = [...state.messages, newMessage];
-                        console.log(
-                            "ChatStore state updated via socket:",
-                            newMessage._id
-                        );
-                        return { messages: updatedMessages };
-                    });
-                } else {
+            const { selectedUser, messages } = get();
+
+            // 1. Обновляем сообщения в текущем чате (если он открыт)
+            const senderIdStr = newMessage.senderId?.toString();
+            const receiverIdStr = newMessage.receiverId?.toString();
+
+            set((state) => {
+                const updatedMessages = [...state.messages];
+                if (
+                    selectedUser &&
+                    (senderIdStr === selectedUser._id.toString() ||
+                        receiverIdStr === selectedUser._id.toString()) &&
+                    !updatedMessages.some((msg) => msg._id === newMessage._id)
+                ) {
+                    updatedMessages.push(newMessage);
+                    console.log("Messages in selected chat updated locally.");
+                } else if (selectedUser) {
                     console.log(
-                        "Duplicate message received via socket, ignoring:",
-                        newMessage._id
+                        "Message is duplicate or not for selected chat. Skipping local message list update."
                     );
                 }
-            }
+                return { messages: updatedMessages };
+            });
 
-            // Обновляем список контактов при получении от нового юзера
-            const senderId = newMessage.senderId;
-            const myId = useAuthStore.getState().authUser?._id;
-            if (myId && senderId && senderId.toString() !== myId.toString()) {
-                const isNewPartner = !conversationPartners.some(
-                    (p) => p._id === senderId.toString()
-                );
-                if (isNewPartner) {
-                    console.log(
-                        "Received message from new partner, refetching contacts..."
-                    );
-                    get().fetchConversationPartners();
-                }
-            }
+            // 2. ВСЕГДА ВЫЗЫВАЕМ fetchConversationPartners для обновления сайдбара
+            // Это гарантирует, что предпросмотр сообщения обновится и порядок чатов будет корректным
+            console.log(
+                "Triggering full contacts refetch to update sidebar preview for ALL messages."
+            );
+
+            get().fetchConversationPartners();
+
+            console.log("--- End Socket newMessage DEBUG (Final Attempt) ---");
         };
+
         socket.off("newMessage", handleNewMessage);
         socket.on("newMessage", handleNewMessage);
-        console.log(
-            "Subscribed to socket 'newMessage' event using socket from useAuthStore"
-        );
+        console.log("Subscribed to socket 'newMessage' event.");
         return () => {
             console.log("Unsubscribing from socket 'newMessage' event");
             const currentSocket = useAuthStore.getState().socket;

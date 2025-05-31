@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare } from "lucide-react";
+import { Image, MessageSquare, Video } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import UserSearch from "./search/UserSearch";
-import useChatStore from "../store/useChatStore";
+import useChatStore from "../store/useChatStore"; // Correct import
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { useTranslation } from "react-i18next";
-// import { Link } from "react-router-dom"; // Link уже не нужен
 
 const MIN_WIDTH_LG = 200;
 const MAX_WIDTH_LG = 500;
@@ -13,13 +12,8 @@ const DEFAULT_WIDTH_LG = 288;
 
 function SideBar() {
     const { t } = useTranslation();
-    const {
-        conversationPartners,
-        isContactsLoading,
-        fetchConversationPartners,
-        selectedUser,
-        setSelectedUser,
-    } = useChatStore();
+    // ИСПРАВЛЕНО: Получаем весь объект состояния из useChatStore
+    const chatStore = useChatStore();
     const { onlineUsers, authUser } = useAuthStore();
 
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH_LG);
@@ -27,7 +21,7 @@ function SideBar() {
     const sidebarRef = useRef(null);
     const [isMobileWidth, setIsMobileWidth] = useState(
         window.innerWidth < 1024
-    ); // Состояние для ширины
+    );
 
     // --- Состояние для чекбокса ---
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -43,25 +37,38 @@ function SideBar() {
     }, []);
 
     useEffect(() => {
-        if (fetchConversationPartners) {
-            fetchConversationPartners();
+        if (chatStore.fetchConversationPartners) {
+            chatStore.fetchConversationPartners();
         }
-    }, [fetchConversationPartners]);
+    }, [chatStore.fetchConversationPartners]);
 
-    // ---  Фильтруем список контактов для отображения ---
-    const filteredPartners = conversationPartners.filter((partner) => {
-        // Исключаем себя из списка в любом случае
-        if (partner._id === authUser?._id) return false;
-        // Если чекбокс включен, показываем только онлайн
-        if (showOnlineOnly) {
-            return onlineUsers.includes(partner._id);
+    // Логирование chatStore.conversationPartners для отладки
+    console.log(
+        "SideBar chatStore.conversationPartners:",
+        JSON.stringify(
+            chatStore.conversationPartners.map((p) => ({
+                _id: p._id,
+                fullName: p.fullName,
+                lastMessage: p.lastMessage
+                    ? { _id: p.lastMessage._id, text: p.lastMessage.text }
+                    : null,
+            })),
+            null,
+            2
+        )
+    );
+
+    const filteredPartners = chatStore.conversationPartners.filter(
+        (partner) => {
+            if (partner._id === authUser?._id) return false;
+            if (showOnlineOnly) {
+                return onlineUsers.includes(partner._id);
+            }
+            return true;
         }
-        // Иначе показываем всех (кроме себя)
-        return true;
-    });
+    );
 
-    // --- Считаем онлайн для счетчика из *всех* партнеров (кроме себя) ---
-    const onlineCount = conversationPartners.filter(
+    const onlineCount = chatStore.conversationPartners.filter(
         (partner) =>
             onlineUsers.includes(partner._id) && partner._id !== authUser?._id
     ).length;
@@ -109,32 +116,59 @@ function SideBar() {
         };
     }, [stopResizing]);
 
+    const renderMessagePreview = (message) => {
+        if (!message) {
+            return <span className="italic">{t("sidebar.noMessagesYet")}</span>;
+        }
+
+        const isMyMessage = authUser && message.senderId === authUser._id;
+        const prefix = isMyMessage ? `${t("sidebar.you")}:` : "";
+
+        if (message.text) {
+            return (
+                <span className="truncate">
+                    {prefix} {message.text}
+                </span>
+            );
+        } else if (message.image) {
+            return (
+                <span className="flex items-center gap-1">
+                    {prefix} <Image className="w-4 h-4" />
+                    {t("sidebar.sentImage")}
+                </span>
+            );
+        } else if (message.video) {
+            return (
+                <span className="flex items-center gap-1">
+                    {prefix} <Video className="w-4 h-4" />
+                    {t("sidebar.sentVideo")}
+                </span>
+            );
+        }
+        return null;
+    };
+
     return (
         <aside
             ref={sidebarRef}
             className={`h-full border-r border-base-300 flex flex-col flex-shrink-0 bg-base-100 lg:rounded-l-lg relative transition-none ${
-                selectedUser && isMobileWidth ? "hidden" : "flex"
+                chatStore.selectedUser && isMobileWidth ? "hidden" : "flex"
             } ${isMobileWidth ? "w-full" : "lg:flex"}`}
             style={!isMobileWidth ? { width: `${sidebarWidth}px` } : {}}
         >
             <div className="flex flex-col h-full overflow-hidden">
-                {/* Поиск */}
                 <div className="p-2 border-b border-base-300 flex-shrink-0">
                     <UserSearch />
                 </div>
 
-                {/* --- Заголовок, счетчик и чекбокс --- */}
                 <div className="p-3 border-b border-base-300 flex items-center justify-between flex-wrap gap-2 flex-shrink-0">
-                    {/* Заголовок */}
                     <div className="flex items-center gap-2 text-base-content/80 overflow-hidden flex-shrink-0">
                         <MessageSquare className="w-5 h-5 flex-shrink-0" />
                         <span className="text-md font-semibold">
                             {t("sidebar.allChats")}
                         </span>
                     </div>
-                    {/* Правая часть: Счетчик и чекбокс */}
                     <div className="flex items-center gap-3 flex-shrink-0">
-                        {/* Счетчик онлайн */}
                         <span
                             className={`text-xs font-medium whitespace-nowrap ${
                                 onlineCount > 0
@@ -144,7 +178,6 @@ function SideBar() {
                         >
                             {t("sidebar.onlineCounter", { count: onlineCount })}
                         </span>
-                        {/* Чекбокс "Show online only" */}
                         <label className="label cursor-pointer p-0 justify-start gap-1.5">
                             <input
                                 type="checkbox"
@@ -161,17 +194,18 @@ function SideBar() {
                     </div>
                 </div>
 
-                {/* Список чатов */}
                 <div className="flex-1 overflow-y-auto py-1">
-                    {isContactsLoading ? (
+                    {chatStore.isContactsLoading ? (
                         <SidebarSkeleton count={5} />
                     ) : filteredPartners.length > 0 ? (
                         filteredPartners.map((partner) => (
                             <button
                                 key={partner._id}
-                                onClick={() => setSelectedUser(partner)}
+                                onClick={() =>
+                                    chatStore.setSelectedUser(partner)
+                                }
                                 className={`w-full p-2 lg:p-3 flex items-center gap-3 hover:bg-base-300 focus:bg-base-300 outline-none transition-colors duration-150 ${
-                                    selectedUser?._id === partner._id
+                                    chatStore.selectedUser?._id === partner._id
                                         ? "bg-base-300 font-semibold"
                                         : ""
                                 } `}
@@ -200,10 +234,10 @@ function SideBar() {
                                     <div className="font-medium truncate text-sm text-base-content">
                                         {partner.fullName}
                                     </div>
-                                    <div className="text-xs text-base-content/60">
-                                        {onlineUsers.includes(partner._id)
-                                            ? t("sidebar.statusOnline")
-                                            : t("sidebar.statusOffline")}
+                                    <div className="text-xs text-base-content/60 flex items-center gap-1">
+                                        {renderMessagePreview(
+                                            partner.lastMessage
+                                        )}
                                     </div>
                                 </div>
                             </button>
@@ -213,15 +247,13 @@ function SideBar() {
                         <div className="text-center text-xs text-base-content/50 py-4 px-2 block">
                             {showOnlineOnly
                                 ? t("sidebar.noOnlineUsers")
-                                : conversationPartners.length === 0
+                                : chatStore.conversationPartners.length === 0 // ИСПРАВЛЕНО: Используем chatStore.conversationPartners
                                 ? t("sidebar.searchToStart")
                                 : t("sidebar.noUsersMatchFilter")}
                         </div>
                     )}
                 </div>
             </div>
-
-            {/* Иконка профиля снизу sidebar удалена */}
 
             <div
                 className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize bg-transparent hover:bg-primary/20 active:bg-primary/30 transition-colors duration-150 z-10 hidden lg:block"
