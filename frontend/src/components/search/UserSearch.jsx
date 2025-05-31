@@ -5,6 +5,8 @@ import UserListItem from "./UserListItem";
 import debounce from "lodash.debounce";
 import SearchSkeleton from "../skeletons/SidebarSkeleton";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useChatStore } from "../../store/useChatStore";
 
 const UserSearch = () => {
     const { t } = useTranslation();
@@ -14,6 +16,8 @@ const UserSearch = () => {
     const [error, setError] = useState(null);
     const [showResults, setShowResults] = useState(false);
     const searchContainerRef = useRef(null);
+    const navigate = useNavigate();
+    const { setSelectedUser } = useChatStore();
 
     const performSearch = async (searchQuery) => {
         const trimmedQuery = searchQuery.trim();
@@ -50,6 +54,12 @@ const UserSearch = () => {
         const newQuery = e.target.value;
         setQuery(newQuery);
         debouncedSearchRef.current(newQuery);
+    };
+
+    const handleUserSelectAndNavigate = (user) => {
+        navigate(`/profile/${user._id}`);
+        clearSearch();
+        setSelectedUser(null);
     };
 
     const clearSearch = () => {
@@ -108,7 +118,7 @@ const UserSearch = () => {
 
             {showResults && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-2">
-                    {isLoading && results.length === 0 ? ( // Показываем скелетон только если результатов еще нет
+                    {isLoading && results.length === 0 ? (
                         <SearchSkeleton count={3} />
                     ) : error ? (
                         <p className="text-error text-xs text-center p-2">
@@ -120,11 +130,11 @@ const UserSearch = () => {
                                 <UserListItem
                                     key={user._id}
                                     user={user}
-                                    onUserSelect={clearSearch}
+                                    onUserSelect={handleUserSelectAndNavigate}
                                 />
                             ))}
                         </ul>
-                    ) : query.trim() && !isLoading ? ( // Показываем "No users found" только если не идет загрузка
+                    ) : query.trim() && !isLoading ? (
                         <p className="text-center text-xs text-base-content/50 p-2">
                             {t("userSearch.noUsersFound")}
                         </p>

@@ -85,7 +85,9 @@
         "errorReadingFile": "Ошибка чтения файла.",
         "failedToReadImage": "Не удалось прочитать изображение.",
         "usernameLengthError": "Имя пользователя должно быть от 3 до 30 символов.",
-        "changePhoto": "Изменить"
+        "changePhoto": "Изменить",
+        "sendMessage": "Отправить сообщение",
+        "noBioYet": "У этого пользователя нету описания"
     },
     "loginPage": {
         "welcomeBack": "С возвращением!",

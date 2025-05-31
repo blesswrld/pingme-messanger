@@ -1,15 +1,16 @@
 import React from "react";
-import useChatStore from "../../store/useChatStore";
+// import useChatStore from "../../store/useChatStore";
 import { useTranslation } from "react-i18next";
 
 const UserListItem = ({ user, onUserSelect }) => {
-    const { setSelectedUser } = useChatStore();
+    // const { setSelectedUser } = useChatStore();
     const { t } = useTranslation();
 
     const handleClick = () => {
-        setSelectedUser(user);
+        // Удаляем setSelectedUser(user) здесь, так как навигация перенаправит на страницу профиля,
+        // где выбранный пользователь не устанавливается, чтобы не ломать логику чата
         if (onUserSelect) {
-            onUserSelect();
+            onUserSelect(user); // Передаем объект пользователя в колбэк
         }
     };
 

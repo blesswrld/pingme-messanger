@@ -5,6 +5,7 @@ import UserSearch from "./search/UserSearch";
 import useChatStore from "../store/useChatStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { useTranslation } from "react-i18next";
+// import { Link } from "react-router-dom"; // Link уже не нужен
 
 const MIN_WIDTH_LG = 200;
 const MAX_WIDTH_LG = 500;
@@ -100,24 +101,21 @@ function SideBar() {
         }
     }, []);
 
-    const memoizedStartResizing = useCallback(startResizing, [startResizing]); // Зависимость от startResizing
+    const memoizedStartResizing = useCallback(startResizing, [startResizing]);
 
     useEffect(() => {
         return () => {
-            stopResizing(); // Вызываем stopResizing для очистки
+            stopResizing();
         };
-    }, [stopResizing]); // Зависимость от stopResizing
+    }, [stopResizing]);
 
     return (
         <aside
             ref={sidebarRef}
             className={`h-full border-r border-base-300 flex flex-col flex-shrink-0 bg-base-100 lg:rounded-l-lg relative transition-none ${
-                selectedUser && isMobileWidth ? "hidden" : "flex" // Скрываем только на мобильных если выбран юзер
-            } ${
-                isMobileWidth ? "w-full" : "lg:flex" // w-full на мобильных, lg:flex для десктопа (ширина через style)
-            }`}
-            // Применяем ширину: 100% если isMobileWidth, иначе динамическую sidebarWidth
-            style={!isMobileWidth ? { width: `${sidebarWidth}px` } : {}} // Применяем style только не на мобильных
+                selectedUser && isMobileWidth ? "hidden" : "flex"
+            } ${isMobileWidth ? "w-full" : "lg:flex"}`}
+            style={!isMobileWidth ? { width: `${sidebarWidth}px` } : {}}
         >
             <div className="flex flex-col h-full overflow-hidden">
                 {/* Поиск */}
@@ -141,7 +139,7 @@ function SideBar() {
                             className={`text-xs font-medium whitespace-nowrap ${
                                 onlineCount > 0
                                     ? "text-success"
-                                    : "text-base-content/60" // Динамический цвет
+                                    : "text-base-content/60"
                             }`}
                         >
                             {t("sidebar.onlineCounter", { count: onlineCount })}
@@ -223,7 +221,8 @@ function SideBar() {
                 </div>
             </div>
 
-            {/* Ручка ресайза видна только на lg+ */}
+            {/* Иконка профиля снизу sidebar удалена */}
+
             <div
                 className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize bg-transparent hover:bg-primary/20 active:bg-primary/30 transition-colors duration-150 z-10 hidden lg:block"
                 onMouseDown={memoizedStartResizing}

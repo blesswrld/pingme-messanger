@@ -79,7 +79,9 @@
         "errorReadingFile": "Error reading file.",
         "failedToReadImage": "Failed to read image.",
         "usernameLengthError": "Username must be between 3 and 30 characters.",
-        "changePhoto": "Change"
+        "changePhoto": "Change",
+        "sendMessage": "Send Message",
+        "noBioYet": "This user doesn't have any bio yet"
     },
     "loginPage": {
         "welcomeBack": "Welcome Back",
