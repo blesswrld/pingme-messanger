@@ -64,15 +64,25 @@ function ChatContainer() {
                                 />
                             </div>
                         </div>
-                        <div className="chat-bubble flex flex-col max-w-xs md:max-w-md lg:max-w-lg">
+                        <div className="chat-bubble flex flex-col max-w-xs md:max-w-md lg:max-w-lg relative">
+                            {" "}
+                            {/* Добавлен relative для лоадера */}
+                            {message.isSending && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-base-300/80 rounded-md z-10">
+                                    <span className="loading loading-spinner loading-md text-primary"></span>
+                                </div>
+                            )}
                             {message.image && (
                                 <img
                                     src={message.image}
                                     alt={t("chat.attachmentAlt", {
                                         defaultValue: "Attachment",
                                     })}
-                                    className="max-w-[200px] md:max-w-[250px] rounded-md mb-1.5 cursor-pointer"
+                                    className={`max-w-[300px] md:max-w-[350px] rounded-md mb-1.5 cursor-pointer ${
+                                        message.isSending ? "opacity-50" : ""
+                                    }`}
                                     onClick={() =>
+                                        !message.isSending &&
                                         window.open(message.image, "_blank")
                                     }
                                 />
@@ -81,9 +91,14 @@ function ChatContainer() {
                                 <video
                                     src={message.video}
                                     controls
-                                    className="max-w-[200px] md:max-w-[250px] rounded-md mb-1.5 bg-black"
+                                    className={`max-w-[300px] md:max-w-[350px] rounded-md mb-1.5 bg-black ${
+                                        message.isSending ? "opacity-50" : ""
+                                    }`}
                                     onClick={(e) => {
-                                        if (e.target.tagName !== "VIDEO") {
+                                        if (
+                                            e.target.tagName !== "VIDEO" &&
+                                            !message.isSending
+                                        ) {
                                             window.open(
                                                 message.video,
                                                 "_blank"
