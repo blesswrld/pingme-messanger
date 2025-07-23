@@ -3,45 +3,24 @@ import { useAuthStore } from "../store/useAuthStore";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
-import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { useFormValidation, FormError } from "../hooks/useFormValidation.jsx";
 
 const LoginPage = () => {
     const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
     const { login, isLoggingIn } = useAuthStore();
 
-    const validateForm = () => {
-        if (!formData.email.trim()) {
-            toast.error(t("loginPage.emailRequired"));
-            return false;
-        }
-        if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            toast.error(t("loginPage.invalidEmail"));
-            return false;
-        }
-        if (!formData.password) {
-            toast.error(t("loginPage.passwordRequired"));
-            return false;
-        }
-        if (formData.password.length < 6) {
-            toast.error(t("loginPage.passwordMinLength"));
-            return false;
-        }
-        return true;
-    };
+    const { values, errors, handleChange, handleBlur, validateAll } =
+        useFormValidation({
+            email: "",
+            password: "",
+        });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        toast.dismiss();
-
-        const isValid = validateForm();
-        if (isValid) {
-            login(formData);
+        if (validateAll()) {
+            login(values);
         }
     };
 
@@ -74,7 +53,11 @@ const LoginPage = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-1">
-                            <label className="input w-full validator flex items-center gap-2">
+                            <label
+                                className={`input w-full flex items-center gap-2 outline-none focus:outline-none focus-within:outline-none ${
+                                    errors.email ? "input-error" : ""
+                                }`}
+                            >
                                 <svg
                                     className="h-[1em] opacity-50"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -99,22 +82,24 @@ const LoginPage = () => {
                                 </svg>
                                 <input
                                     type="email"
+                                    name="email"
                                     placeholder={t(
                                         "loginPage.emailPlaceholder"
                                     )}
-                                    value={formData.email}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            email: e.target.value,
-                                        })
-                                    }
+                                    value={values.email}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
                                 />
                             </label>
+                            <FormError message={errors.email} />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="input w-full validator flex items-center gap-2 relative">
+                            <label
+                                className={`input w-full flex items-center gap-2 relative outline-none focus:outline-none focus-within:outline-none ${
+                                    errors.password ? "input-error" : ""
+                                }`}
+                            >
                                 <svg
                                     className="h-[1em] opacity-50"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -138,16 +123,13 @@ const LoginPage = () => {
                                 </svg>
                                 <input
                                     type={showPassword ? "text" : "password"}
+                                    name="password"
                                     placeholder={t(
                                         "loginPage.passwordPlaceholder"
                                     )}
-                                    value={formData.password}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            password: e.target.value,
-                                        })
-                                    }
+                                    value={values.password}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
                                 />
                                 <button
                                     type="button"
@@ -163,6 +145,7 @@ const LoginPage = () => {
                                     )}
                                 </button>
                             </label>
+                            <FormError message={errors.password} />
                         </div>
 
                         <button

@@ -3,63 +3,25 @@ import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import AuthImagePattern from "../components/AuthImagePattern";
-import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { useFormValidation, FormError } from "../hooks/useFormValidation.jsx";
 
 const SignUpPage = () => {
     const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
-    const [showUsernameHint, setShowUsernameHint] = useState(false);
-    const [formData, setFormData] = useState({
-        fullName: "",
-        email: "",
-        password: "",
-    });
-
     const { signup, isSigningUp } = useAuthStore();
 
-    const validateForm = () => {
-        const usernameRegex = /^[a-zA-Z0-9-]{3,30}$/;
-        if (!formData.fullName.trim()) {
-            toast.error(t("signUpPage.usernameRequired"));
-            setShowUsernameHint(true);
-            return false;
-        }
-        if (!usernameRegex.test(formData.fullName)) {
-            toast.error(t("signUpPage.usernameInvalidFormat"));
-            setShowUsernameHint(true);
-            return false;
-        }
-        setShowUsernameHint(false);
-
-        if (!formData.email.trim()) {
-            toast.error(t("loginPage.emailRequired"));
-            return false;
-        }
-        if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            toast.error(t("loginPage.invalidEmail"));
-            return false;
-        }
-
-        if (!formData.password) {
-            toast.error(t("loginPage.passwordRequired"));
-            return false;
-        }
-        if (formData.password.length < 6) {
-            toast.error(t("loginPage.passwordMinLength"));
-            return false;
-        }
-
-        return true;
-    };
+    const { values, errors, touched, handleChange, handleBlur, validateAll } =
+        useFormValidation({
+            fullName: "",
+            email: "",
+            password: "",
+        });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        toast.dismiss();
-
-        const isValid = validateForm();
-        if (isValid) {
-            signup(formData);
+        if (validateAll()) {
+            signup(values);
         }
     };
 
@@ -94,7 +56,15 @@ const SignUpPage = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-1">
-                            <label className="input w-full validator flex items-center gap-2">
+                            <label
+                                className={`input w-full flex items-center gap-2 outline-none focus:outline-none focus-within:outline-none ${
+                                    errors.fullName ? "input-error" : ""
+                                } ${
+                                    touched.fullName && !errors.fullName
+                                        ? "input-success"
+                                        : ""
+                                }`}
+                            >
                                 <svg
                                     className="h-[1em] opacity-50"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -113,32 +83,28 @@ const SignUpPage = () => {
                                 </svg>
                                 <input
                                     type="text"
-                                    required
+                                    name="fullName"
                                     placeholder={t(
                                         "signUpPage.usernamePlaceholder"
                                     )}
-                                    minLength={3}
-                                    maxLength={30}
-                                    value={formData.fullName}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            fullName: e.target.value,
-                                        })
-                                    }
+                                    value={values.fullName}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
                                 />
                             </label>
-                            <p
-                                className={`text-sm text-error ${
-                                    showUsernameHint ? "block" : "hidden"
-                                }`}
-                            >
-                                {t("signUpPage.usernameHint")}
-                            </p>
+                            <FormError message={errors.fullName} />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="input w-full validator flex items-center gap-2">
+                            <label
+                                className={`input w-full flex items-center gap-2 outline-none focus:outline-none focus-within:outline-none  ${
+                                    errors.email ? "input-error" : ""
+                                } ${
+                                    touched.email && !errors.email
+                                        ? "input-success"
+                                        : ""
+                                }`}
+                            >
                                 <svg
                                     className="h-[1em] opacity-50"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -163,23 +129,28 @@ const SignUpPage = () => {
                                 </svg>
                                 <input
                                     type="email"
+                                    name="email"
                                     placeholder={t(
                                         "loginPage.emailPlaceholder"
                                     )}
-                                    value={formData.email}
-                                    required
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            email: e.target.value,
-                                        })
-                                    }
+                                    value={values.email}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
                                 />
                             </label>
+                            <FormError message={errors.email} />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="input w-full validator flex items-center gap-2 relative">
+                            <label
+                                className={`input w-full flex items-center gap-2 relative outline-none focus:outline-none focus-within:outline-none  ${
+                                    errors.password ? "input-error" : ""
+                                } ${
+                                    touched.password && !errors.password
+                                        ? "input-success"
+                                        : ""
+                                }`}
+                            >
                                 <svg
                                     className="h-[1em] opacity-50"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -203,17 +174,13 @@ const SignUpPage = () => {
                                 </svg>
                                 <input
                                     type={showPassword ? "text" : "password"}
-                                    required
+                                    name="password"
                                     placeholder={t(
                                         "loginPage.passwordPlaceholder"
                                     )}
-                                    value={formData.password}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            password: e.target.value,
-                                        })
-                                    }
+                                    value={values.password}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
                                 />
                                 <button
                                     type="button"
@@ -229,6 +196,7 @@ const SignUpPage = () => {
                                     )}
                                 </button>
                             </label>
+                            <FormError message={errors.password} />
                         </div>
 
                         <button
