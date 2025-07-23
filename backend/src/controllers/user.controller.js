@@ -32,100 +32,66 @@ export const searchUsers = async (req, res) => {
 
 export const getConversationPartners = async (req, res) => {
     try {
-        // Проверка аутентификации пользователя
-        if (!req.user || !req.user._id) {
-            console.error(
-                "getConversationPartners: User not authenticated or user ID missing."
-            );
-            return res.status(401).json({ message: "User not authenticated." });
+        const loggedInUserId = req.user._id;
+
+        // 1. Находим все чаты, в которых участвует текущий пользователь
+        const messages = await Message.find({
+            $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
+        }).sort({ createdAt: -1 });
+
+        // 2. Группируем чаты по собеседникам, сохраняя последнее сообщение
+        const partnerMap = new Map();
+        for (const msg of messages) {
+            const partnerId = msg.senderId.equals(loggedInUserId)
+                ? msg.receiverId.toString()
+                : msg.senderId.toString();
+            if (!partnerMap.has(partnerId)) {
+                partnerMap.set(partnerId, { lastMessage: msg });
+            }
         }
-        const currentUserId = req.user._id;
 
-        // Агрегация для нахождения последнего сообщения для каждой уникальной беседы
-        const latestMessages = await Message.aggregate([
-            {
-                $match: {
-                    $or: [
-                        { senderId: currentUserId },
-                        { receiverId: currentUserId },
-                    ],
-                },
-            },
-            {
-                $sort: { createdAt: -1 },
-            },
-            {
-                $group: {
-                    _id: {
-                        $cond: {
-                            if: { $eq: ["$senderId", currentUserId] },
-                            then: "$receiverId",
-                            else: "$senderId",
-                        },
-                    },
-                    lastMessage: { $first: "$$ROOT" },
-                },
-            },
-            {
-                $project: {
-                    _id: 0,
-                    // Преобразуем ObjectId в строку явно на этапе агрегации
-                    partnerId: { $toString: "$_id" },
-                    lastMessage: {
-                        _id: { $toString: "$lastMessage._id" },
-                        senderId: { $toString: "$lastMessage.senderId" },
-                        receiverId: { $toString: "$lastMessage.receiverId" },
-                        text: "$lastMessage.text",
-                        image: "$lastMessage.image",
-                        video: "$lastMessage.video",
-                        createdAt: "$lastMessage.createdAt",
-                    },
-                },
-            },
+        // 3. Считаем непрочитанные сообщения для каждого чата
+        const unreadCounts = await Message.aggregate([
+            { $match: { receiverId: loggedInUserId, status: { $ne: "read" } } },
+            { $group: { _id: "$senderId", count: { $sum: 1 } } },
         ]);
+        const unreadMap = new Map(
+            unreadCounts.map((item) => [item._id.toString(), item.count])
+        );
 
-        const partnerIds = latestMessages.map((item) => item.partnerId);
-
+        // 4. Получаем информацию о пользователях-собеседниках
+        const partnerIds = Array.from(partnerMap.keys());
         if (partnerIds.length === 0) {
             return res.status(200).json([]);
         }
+        const partners = await User.find({ _id: { $in: partnerIds } }).select(
+            "-password"
+        );
 
-        const partners = await User.find({
-            _id: { $in: partnerIds },
-        })
-            .select("fullName profilePic _id")
-            .lean();
-
-        const conversationData = partners.map((partner) => {
-            const latestMsgData = latestMessages.find(
-                (msg) => msg.partnerId === partner._id.toString()
-            )?.lastMessage;
-
+        // 5. Собираем итоговый результат
+        let combinedData = partners.map((partner) => {
+            const partnerIdStr = partner._id.toString();
             return {
-                ...partner,
-                _id: partner._id.toString(),
-                lastMessage: latestMsgData || null,
+                ...partner.toObject(),
+                lastMessage: partnerMap.get(partnerIdStr)?.lastMessage,
+                unreadCount: unreadMap.get(partnerIdStr) || 0,
             };
         });
 
-        conversationData.sort((a, b) => {
-            const dateA = a.lastMessage?.createdAt
-                ? new Date(a.lastMessage.createdAt)
-                : new Date(0);
-            const dateB = b.lastMessage?.createdAt
-                ? new Date(b.lastMessage.createdAt)
-                : new Date(0);
-            return dateB.getTime() - dateA.getTime();
+        // 6. Сортируем по дате последнего сообщения
+        combinedData.sort((a, b) => {
+            if (!a.lastMessage) return 1;
+            if (!b.lastMessage) return -1;
+            return (
+                new Date(b.lastMessage.createdAt) -
+                new Date(a.lastMessage.createdAt)
+            );
         });
 
-        res.status(200).json(conversationData);
+        res.status(200).json(combinedData);
     } catch (error) {
-        console.error(
-            "Error in getConversationPartners controller:",
-            error.message,
-            error.stack
-        );
-        res.status(500).json({ message: "Internal Server error" });
+        console.error("Error in getConversationPartners:", error.message);
+        res.status(500).json({ error: "Internal Server error" });
     }
 };
 

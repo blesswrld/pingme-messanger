@@ -12,10 +12,8 @@ const DEFAULT_WIDTH_LG = 288;
 
 function SideBar() {
     const { t } = useTranslation();
-    // ИСПРАВЛЕНО: Получаем весь объект состояния из useChatStore
     const chatStore = useChatStore();
     const { onlineUsers, authUser } = useAuthStore();
-
     const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH_LG);
     const isResizing = useRef(false);
     const sidebarRef = useRef(null);
@@ -40,23 +38,7 @@ function SideBar() {
         if (chatStore.fetchConversationPartners) {
             chatStore.fetchConversationPartners();
         }
-    }, [chatStore.fetchConversationPartners]);
-
-    // Логирование chatStore.conversationPartners для отладки
-    console.log(
-        "SideBar chatStore.conversationPartners:",
-        JSON.stringify(
-            chatStore.conversationPartners.map((p) => ({
-                _id: p._id,
-                fullName: p.fullName,
-                lastMessage: p.lastMessage
-                    ? { _id: p.lastMessage._id, text: p.lastMessage.text }
-                    : null,
-            })),
-            null,
-            2
-        )
-    );
+    }, []);
 
     const filteredPartners = chatStore.conversationPartners.filter(
         (partner) => {
@@ -122,7 +104,7 @@ function SideBar() {
         }
 
         const isMyMessage = authUser && message.senderId === authUser._id;
-        const prefix = isMyMessage ? `${t("sidebar.you")}:` : "";
+        const prefix = isMyMessage ? `${t("sidebar.you")}: ` : "";
 
         if (message.text) {
             return (
@@ -160,7 +142,6 @@ function SideBar() {
                 <div className="p-2 border-b border-base-300 flex-shrink-0">
                     <UserSearch />
                 </div>
-
                 <div className="p-3 border-b border-base-300 flex items-center justify-between flex-wrap gap-2 flex-shrink-0">
                     <div className="flex items-center gap-2 text-base-content/80 overflow-hidden flex-shrink-0">
                         <MessageSquare className="w-5 h-5 flex-shrink-0" />
@@ -231,8 +212,15 @@ function SideBar() {
                                 </div>
                                 {/* Детали видны всегда */}
                                 <div className="text-left min-w-0 flex-1">
-                                    <div className="font-medium truncate text-sm text-base-content">
-                                        {partner.fullName}
+                                    <div className="font-medium truncate text-sm text-base-content flex items-center justify-between">
+                                        <span className="truncate">
+                                            {partner.fullName}
+                                        </span>
+                                        {partner.unreadCount > 0 && (
+                                            <span className="badge badge-primary badge-sm ml-2">
+                                                {partner.unreadCount}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="text-xs text-base-content/60 flex items-center gap-1">
                                         {renderMessagePreview(
@@ -247,7 +235,7 @@ function SideBar() {
                         <div className="text-center text-xs text-base-content/50 py-4 px-2 block">
                             {showOnlineOnly
                                 ? t("sidebar.noOnlineUsers")
-                                : chatStore.conversationPartners.length === 0 // ИСПРАВЛЕНО: Используем chatStore.conversationPartners
+                                : chatStore.conversationPartners.length === 0
                                 ? t("sidebar.searchToStart")
                                 : t("sidebar.noUsersMatchFilter")}
                         </div>

@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import NoChatSelected from "../components/NoChatSelected";
 import SideBar from "../components/Sidebar";
 import ChatContainer from "../components/ChatContainer";
 import Navbar from "../components/Navbar";
+import useSocketSubscription from "../hooks/useSocketSubscription"; // Импортируем новый хук
 
 const HomePage = () => {
     const { selectedUser } = useChatStore();
+
+    // Вызываем хук здесь. Он будет управлять всеми подписками на сокеты.
+    useSocketSubscription();
 
     return (
         <div className="flex flex-col h-screen bg-base-100">
