@@ -11,6 +11,18 @@ export const useChatStore = create((set, get) => ({
     isContactsLoading: false,
     isSendingMessage: false,
 
+    markAllMessagesAsReadFrom: (readerId) => {
+        set((state) => ({
+            messages: state.messages.map((msg) => {
+                // Если мы отправили это сообщение этому пользователю, обновляем его статус
+                if (msg.receiverId === readerId && msg.status !== "read") {
+                    return { ...msg, status: "read" };
+                }
+                return msg;
+            }),
+        }));
+    },
+
     // Функция для загрузки собеседников
     fetchConversationPartners: async () => {
         set({ isContactsLoading: true });
@@ -162,14 +174,29 @@ export const useChatStore = create((set, get) => ({
             console.log("--- End Socket newMessage DEBUG (Final Attempt) ---");
         };
 
+        const handleMessagesRead = ({ readerId }) => {
+            console.log(
+                `[Socket] Received messagesReadUpdate from reader: ${readerId}`
+            );
+            // Вызываем наш новый экшен
+            get().markAllMessagesAsReadFrom(readerId);
+        };
+
         socket.off("newMessage", handleNewMessage);
         socket.on("newMessage", handleNewMessage);
+
+        socket.off("messagesReadUpdate", handleMessagesRead);
+        socket.on("messagesReadUpdate", handleMessagesRead);
+
+        console.log("Subscribed to socket 'messagesReadUpdate' event.");
         console.log("Subscribed to socket 'newMessage' event.");
+
         return () => {
             console.log("Unsubscribing from socket 'newMessage' event");
             const currentSocket = useAuthStore.getState().socket;
             if (currentSocket) {
                 currentSocket.off("newMessage", handleNewMessage);
+                currentSocket.off("messagesReadUpdate", handleMessagesRead); // Добавляем отписку
             }
         };
     },

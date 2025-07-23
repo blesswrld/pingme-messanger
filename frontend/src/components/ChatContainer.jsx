@@ -6,10 +6,11 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import { useTranslation } from "react-i18next";
+import { BsCheck, BsCheckAll } from "react-icons/bs";
 
 function ChatContainer() {
     const { messages, isMessagesLoading, selectedUser } = useChatStore();
-    const { authUser } = useAuthStore();
+    const { authUser, socket } = useAuthStore();
     const { t, i18n } = useTranslation();
     const messageEndRef = useRef(null);
 
@@ -27,6 +28,14 @@ function ChatContainer() {
         messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
+    useEffect(() => {
+        if (socket && selectedUser?._id) {
+            socket.emit("markMessagesAsRead", {
+                otherUserId: selectedUser._id,
+            });
+        }
+    }, [socket, selectedUser, messages]);
+
     const renderLoading = () => (
         <div className="flex-1 flex flex-col overflow-hidden">
             <ChatHeader />
@@ -41,89 +50,107 @@ function ChatContainer() {
         <div className="flex-1 flex flex-col overflow-hidden bg-base-100 lg:bg-base-200 md:rounded-r-lg">
             <ChatHeader />
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                {messages.map((message) => (
-                    <div
-                        key={message._id}
-                        className={`chat ${
-                            message.senderId === authUser?._id
-                                ? "chat-end"
-                                : "chat-start"
-                        }`}
-                    >
-                        <div className="chat-image avatar">
-                            <div className="w-8 md:w-10 rounded-full">
-                                <img
-                                    src={
-                                        message.senderId === authUser?._id
-                                            ? authUser?.profilePic ||
-                                              "/avatar.png"
-                                            : selectedUser?.profilePic ||
-                                              "/avatar.png"
-                                    }
-                                    alt="profile pic"
-                                />
+                {messages.map((message) => {
+                    const isOwnMessage = message.senderId === authUser?._id;
+                    return (
+                        <div
+                            key={message._id}
+                            className={`chat ${
+                                isOwnMessage ? "chat-end" : "chat-start"
+                            }`}
+                        >
+                            <div className="chat-image avatar">
+                                <div className="w-8 md:w-10 rounded-full">
+                                    <img
+                                        src={
+                                            isOwnMessage
+                                                ? authUser?.profilePic ||
+                                                  "/avatar.png"
+                                                : selectedUser?.profilePic ||
+                                                  "/avatar.png"
+                                        }
+                                        alt="profile pic"
+                                    />
+                                </div>
+                            </div>
+                            <div className="chat-bubble flex flex-col max-w-xs md:max-w-md lg:max-w-lg relative">
+                                {" "}
+                                {/* Добавлен relative для лоадера */}
+                                {message.isSending && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-base-300/80 rounded-md z-10">
+                                        <span className="loading loading-spinner loading-md text-primary"></span>
+                                    </div>
+                                )}
+                                {message.image && (
+                                    <img
+                                        src={message.image}
+                                        alt={t("chat.attachmentAlt", {
+                                            defaultValue: "Attachment",
+                                        })}
+                                        className={`rounded-md mb-1.5 cursor-pointer ${
+                                            message.isSending
+                                                ? "opacity-50"
+                                                : ""
+                                        }`}
+                                        onClick={() =>
+                                            !message.isSending &&
+                                            window.open(message.image, "_blank")
+                                        }
+                                    />
+                                )}
+                                {message.video && (
+                                    <video
+                                        src={message.video}
+                                        controls
+                                        className={`rounded-md mb-1.5 bg-black ${
+                                            message.isSending
+                                                ? "opacity-50"
+                                                : ""
+                                        }`}
+                                        onClick={(e) => {
+                                            if (
+                                                e.target.tagName !== "VIDEO" &&
+                                                !message.isSending
+                                            ) {
+                                                window.open(
+                                                    message.video,
+                                                    "_blank"
+                                                );
+                                            }
+                                        }}
+                                    />
+                                )}
+                                {message.text && (
+                                    <p className="text-sm break-words whitespace-pre-wrap">
+                                        {message.text}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="chat-footer opacity-50 text-xs mt-1 flex items-center gap-1.5">
+                                {message.createdAt
+                                    ? formatMessageTime(
+                                          message.createdAt,
+                                          t,
+                                          i18n.language
+                                      )
+                                    : "..."}
+
+                                {isOwnMessage && (
+                                    <span className="text-base-content/80">
+                                        {message.status === "read" ? (
+                                            <BsCheckAll
+                                                size={16}
+                                                className="text-primary"
+                                            />
+                                        ) : (
+                                            <BsCheck size={16} />
+                                        )}
+                                    </span>
+                                )}
                             </div>
                         </div>
-                        <div className="chat-bubble flex flex-col max-w-xs md:max-w-md lg:max-w-lg relative">
-                            {" "}
-                            {/* Добавлен relative для лоадера */}
-                            {message.isSending && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-base-300/80 rounded-md z-10">
-                                    <span className="loading loading-spinner loading-md text-primary"></span>
-                                </div>
-                            )}
-                            {message.image && (
-                                <img
-                                    src={message.image}
-                                    alt={t("chat.attachmentAlt", {
-                                        defaultValue: "Attachment",
-                                    })}
-                                    className={`rounded-md mb-1.5 cursor-pointer ${
-                                        message.isSending ? "opacity-50" : ""
-                                    }`}
-                                    onClick={() =>
-                                        !message.isSending &&
-                                        window.open(message.image, "_blank")
-                                    }
-                                />
-                            )}
-                            {message.video && (
-                                <video
-                                    src={message.video}
-                                    controls
-                                    className={`rounded-md mb-1.5 bg-black ${
-                                        message.isSending ? "opacity-50" : ""
-                                    }`}
-                                    onClick={(e) => {
-                                        if (
-                                            e.target.tagName !== "VIDEO" &&
-                                            !message.isSending
-                                        ) {
-                                            window.open(
-                                                message.video,
-                                                "_blank"
-                                            );
-                                        }
-                                    }}
-                                />
-                            )}
-                            {message.text && (
-                                <p className="text-sm break-words whitespace-pre-wrap">
-                                    {message.text}
-                                </p>
-                            )}
-                        </div>
-                        <div className="chat-footer opacity-50 text-xs mt-1">
-                            {message.createdAt
-                                ? formatMessageTime(
-                                      message.createdAt,
-                                      t,
-                                      i18n.language
-                                  )
-                                : "..."}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
                 <div ref={messageEndRef} className="h-0" />
             </div>
             <MessageInput />

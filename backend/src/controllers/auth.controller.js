@@ -2,8 +2,9 @@ import bcrypt from "bcryptjs";
 import User from "../modules/user.model.js";
 import { generateToken } from "../lib/utils.js";
 import s3Client from "../lib/s3Client.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
 
 export const signup = async (req, res) => {
     const { fullName, email, password, bio } = req.body;
@@ -97,8 +98,11 @@ export const updateProfile = async (req, res) => {
     const userId = req.user?._id;
     // --- 1. Получаем все возможные поля из запроса ---
     const { profilePic, bio, fullName } = req.body;
-    const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
-    const S3_ENDPOINT_URL = process.env.AWS_S3_ENDPOINT_URL;
+    const {
+        AWS_S3_BUCKET_NAME: BUCKET_NAME,
+        AWS_S3_ENDPOINT_URL: S3_ENDPOINT_URL,
+    } = process.env;
+
     // --- 2. Создаем пустой объект для данных, которые нужно обновить ---
     const updateData = {};
 
@@ -135,43 +139,63 @@ export const updateProfile = async (req, res) => {
 
             // Вложенный try...catch для операции с S3
             try {
-                // Логика парсинга base64 и загрузки на S3
+                // Логика парсинга base64
                 const matches = profilePic.match(
                     /^data:image\/([A-Za-z-+/.=]+);base64,(.+)$/
                 );
                 if (!matches || matches.length !== 3)
                     throw new Error("Invalid base64 format");
-                const fullMimeType = matches[1];
                 const base64Data = matches[2];
-                const simpleImageType = fullMimeType
-                    .split(";")[0]
-                    .split("/")
-                    .pop()
-                    .split("+")[0];
                 const imageBuffer = Buffer.from(base64Data, "base64");
-                const contentType = `image/${simpleImageType}`;
-                const filename = `profilePics/${userId}/${uuidv4()}.${simpleImageType}`;
+
+                // ⭐ ОПТИМИЗАЦИЯ ИЗОБРАЖЕНИЯ С ПОМОЩЬЮ SHARP
+                const optimizedBuffer = await sharp(imageBuffer)
+                    .resize({ width: 300, height: 300, fit: "cover" })
+                    .toFormat("jpeg", { quality: 85 })
+                    .toBuffer();
+
+                // Загрузка на S3
+                const filename = `profilePics/${userId}/${uuidv4()}.jpeg`; // Всегда .jpeg после оптимизации
                 const uploadParams = {
                     Bucket: BUCKET_NAME,
                     Key: filename,
-                    Body: imageBuffer,
-                    ContentType: contentType,
+                    Body: optimizedBuffer, // Используем оптимизированный буфер
+                    ContentType: "image/jpeg",
                 };
-                const command = new PutObjectCommand(uploadParams);
-                await s3Client.send(command);
+                await s3Client.send(new PutObjectCommand(uploadParams));
+
                 const fileUrl = `${S3_ENDPOINT_URL}/${BUCKET_NAME}/${filename}`;
                 console.log(
                     `[UpdateProfile] User ${userId}: S3 upload successful. URL: ${fileUrl}`
                 );
 
-                // Сравниваем новый URL со старым
-                if (fileUrl !== currentUser.profilePic) {
-                    // Добавляем в объект обновления ТОЛЬКО если URL изменился
-                    updateData.profilePic = fileUrl;
-                } else {
-                    console.log(
-                        `[UpdateProfile] User ${userId}: ProfilePic URL is the same. Skipping update.`
-                    );
+                // Добавляем в объект обновления
+                updateData.profilePic = fileUrl;
+
+                // ⭐ УДАЛЕНИЕ СТАРОГО АВАТАРА ИЗ S3
+                // Проверяем, был ли у пользователя старый аватар
+                if (currentUser.profilePic) {
+                    try {
+                        // Извлекаем ключ (имя файла) из полного URL
+                        const oldKey = currentUser.profilePic.split(
+                            `${BUCKET_NAME}/`
+                        )[1];
+                        if (oldKey) {
+                            const deleteCommand = new DeleteObjectCommand({
+                                Bucket: BUCKET_NAME,
+                                Key: oldKey,
+                            });
+                            await s3Client.send(deleteCommand);
+                            console.log(
+                                `[UpdateProfile] User ${userId}: Successfully deleted old profile pic: ${oldKey}`
+                            );
+                        }
+                    } catch (deleteError) {
+                        // Важно: ошибка удаления не должна прерывать запрос. Просто логируем ее.
+                        console.error(
+                            `[UpdateProfile] User ${userId}: FAILED to delete old profile pic. Error: ${deleteError.message}`
+                        );
+                    }
                 }
             } catch (s3Error) {
                 console.error(
@@ -206,7 +230,7 @@ export const updateProfile = async (req, res) => {
             }
         }
 
-        // --- 5. Обработка fullName  ---
+        // --- 5. Обработка fullName ---
         if (fullName !== undefined && fullName !== null) {
             const trimmedFullName = fullName.trim();
             if (trimmedFullName !== currentUser.fullName) {
@@ -228,7 +252,6 @@ export const updateProfile = async (req, res) => {
         }
 
         // --- 6. Проверяем, есть ли вообще что обновлять ---
-        // Если объект updateData пуст, значит ни одно поле не изменилось
         if (Object.keys(updateData).length === 0) {
             console.log(
                 `[UpdateProfile] User ${userId}: No actual changes detected. Returning current user data.`
