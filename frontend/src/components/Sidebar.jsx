@@ -217,7 +217,7 @@ function SideBar() {
                                             {partner.fullName}
                                         </span>
                                         {partner.unreadCount > 0 && (
-                                            <span className="badge badge-primary badge-sm ml-2">
+                                            <span className="badge badge-primary rounded">
                                                 {partner.unreadCount}
                                             </span>
                                         )}

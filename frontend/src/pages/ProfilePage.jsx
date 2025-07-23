@@ -300,7 +300,7 @@ const ProfilePage = () => {
             {!isViewingOwnProfile && (
                 <div className="absolute top-20 left-4 z-20">
                     <button
-                        className="btn btn-circle glass"
+                        className="btn btn-circle"
                         onClick={handleBackClick}
                         aria-label={t("profilePage.backButtonAriaLabel")}
                     >
