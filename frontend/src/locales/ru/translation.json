@@ -52,6 +52,10 @@
     "chat": {
         "attachmentAlt": "Вложение"
     },
+    "notification": {
+        "newFrom": "Новое сообщение от {{name}}",
+        "new": "Новое сообщение"
+    },
     "time": {
         "today": "Сегодня",
         "yesterday": "Вчера",
@@ -96,7 +100,26 @@
         "yourProfileTitle": "Ваш профиль",
         "yourProfileSubtitle": "Управление вашей личной информацией",
         "userProfileTitle": "Профиль {{userName}}",
-        "userProfileSubtitle": "Публичная информация"
+        "userProfileSubtitle": "Публичная информация",
+        "editTheme": "Сменить тему",
+        "selectTheme": "Выбрать тему {{theme}}",
+        "themeUpdatedSuccess": "Тема профиля обновлена!",
+        "themeUpdatedError": "Не удалось обновить тему.",
+        "activityTitle": "Активность за последние 6 месяцев",
+        "projects": "Проекты",
+        "backButtonAriaLabel": "Назад",
+        "accountCreatedSuccess": "Аккаунт успешно создан",
+        "signupError": "Не удалось создать аккаунт",
+        "loginSuccess": "Вход выполнен успешно",
+        "loginError": "Не удалось войти",
+        "logoutSuccess": "Выход выполнен успешно",
+        "logoutError": "Не удалось выйти",
+        "profilePicUpdateSuccess": "Фотография профиля обновлена",
+        "profilePicUpdateError": "Не удалось обновить фотографию профиля",
+        "bioUpdateSuccess": "Описание обновлено",
+        "bioUpdateError": "Не удалось обновить описание",
+        "usernameUpdateSuccess": "Имя пользователя обновлено",
+        "usernameUpdateError": "Не удалось обновить имя пользователя"
     },
     "loginPage": {
         "welcomeBack": "С возвращением!",

@@ -291,6 +291,42 @@ export const updateProfile = async (req, res) => {
     }
 };
 
+export const updateProfileTheme = async (req, res) => {
+    try {
+        const { theme } = req.body;
+        const userId = req.user._id;
+
+        const allowedThemes = [
+            "primary",
+            "secondary",
+            "accent",
+            "neutral",
+            "info",
+            "success",
+            "warning",
+            "error",
+            "red",
+            "orange",
+            "lime",
+            "teal",
+            "cyan",
+            "indigo",
+            "violet",
+            "rose",
+        ];
+        if (!theme || !allowedThemes.includes(theme)) {
+            return res.status(400).json({ error: "Invalid theme value" });
+        }
+
+        await User.findByIdAndUpdate(userId, { profileTheme: theme });
+
+        res.status(200).json({ message: "Theme updated successfully", theme });
+    } catch (error) {
+        console.error("Error in updateProfileTheme controller:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
 export const checkAuth = (req, res) => {
     try {
         res.status(200).json(req.user);

@@ -50,6 +50,10 @@
     "chat": {
         "attachmentAlt": "Attachment"
     },
+    "notification": {
+        "newFrom": "New message from {{name}}",
+        "new": "New message"
+    },
     "time": {
         "today": "Today",
         "yesterday": "Yesterday",
@@ -90,7 +94,26 @@
         "yourProfileTitle": "Your Profile",
         "yourProfileSubtitle": "Manage your personal information",
         "userProfileTitle": "{{userName}}'s Profile",
-        "userProfileSubtitle": "Viewing user's public information"
+        "userProfileSubtitle": "Viewing user's public information",
+        "editTheme": "Change theme",
+        "selectTheme": "Select {{theme}} theme",
+        "themeUpdatedSuccess": "Profile theme updated!",
+        "themeUpdatedError": "Failed to update theme.",
+        "activityTitle": "Activity Last 6 Months",
+        "projects": "Projects",
+        "backButtonAriaLabel": "Back",
+        "accountCreatedSuccess": "Account created successfully",
+        "signupError": "Failed to create account",
+        "loginSuccess": "Logged in successfully",
+        "loginError": "Failed to log in",
+        "logoutSuccess": "Logged out successfully",
+        "logoutError": "Failed to log out",
+        "profilePicUpdateSuccess": "Profile picture updated",
+        "profilePicUpdateError": "Failed to update profile picture",
+        "bioUpdateSuccess": "Bio updated successfully",
+        "bioUpdateError": "Failed to update bio",
+        "usernameUpdateSuccess": "Username updated successfully",
+        "usernameUpdateError": "Failed to update username"
     },
     "loginPage": {
         "welcomeBack": "Welcome Back",

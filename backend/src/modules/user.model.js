@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        profileTheme: { type: String, default: "primary" },
     },
     { timestamps: true }
 );
