@@ -4,10 +4,9 @@ import useChatStore from "../store/useChatStore";
 
 const useSocketSubscription = () => {
     const { socket } = useAuthStore();
-    const { _updateSidebarAfterMessage, messages, setSelectedUser } =
-        useChatStore();
 
     useEffect(() => {
+        // Если сокета нет, ничего не делаем
         if (!socket) return;
 
         // --- Обработчик для НОВЫХ СООБЩЕНИЙ ---
@@ -45,15 +44,31 @@ const useSocketSubscription = () => {
             }
         };
 
-        socket.on("newMessage", handleNewMessage);
-        socket.on("messagesReadUpdate", handleMessagesRead);
+        const onConnect = () => {
+            console.log(
+                "Socket connected/reconnected. Registering event listeners..."
+            );
+            socket.on("newMessage", handleNewMessage);
+            socket.on("messagesReadUpdate", handleMessagesRead);
+        };
 
-        // Очистка при размонтировании компонента или смене сокета
+        // Регистрируем слушатель на событие 'connect'
+        socket.on("connect", onConnect);
+
+        // Если сокет уже подключен в момент монтирования хука, вызываем onConnect сразу
+        if (socket.connected) {
+            onConnect();
+        }
+
+        // Функция очистки, которая сработает при размонтировании
         return () => {
+            console.log("Cleaning up socket event listeners...");
+            // Удаляем все наши слушатели, включая слушатель на 'connect'
+            socket.off("connect", onConnect);
             socket.off("newMessage", handleNewMessage);
             socket.off("messagesReadUpdate", handleMessagesRead);
         };
-    }, [socket]); // Этот хук зависит ТОЛЬКО от сокета
+    }, [socket]); // Зависимость только от сокета - это правильно
 };
 
 export default useSocketSubscription;
