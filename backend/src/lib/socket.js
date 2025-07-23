@@ -16,8 +16,7 @@ export function getReceiverSocketId(userId) {
     return userSocketMap[userId];
 }
 
-// used to store online users
-const userSocketMap = {}; // {userId: socketId}
+const userSocketMap = {};
 
 io.on("connection", (socket) => {
     console.log("A user connected", socket.id);
@@ -29,8 +28,7 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
     socket.on("markMessagesAsRead", async ({ otherUserId }) => {
-        if (!userId) return; // Убедимся, что текущий пользователь аутентифицирован
-
+        if (!userId || !otherUserId) return;
         try {
             // 1. Обновляем сообщения в БД: все сообщения от otherUserId к нам (userId) становятся 'read'
             await Message.updateMany(
@@ -47,7 +45,8 @@ io.on("connection", (socket) => {
             if (receiverSocketId) {
                 // 3. Отправляем событие ТОЛЬКО собеседнику
                 io.to(receiverSocketId).emit("messagesReadUpdate", {
-                    readerId: userId,
+                    // Отправляем ID того, КТО прочитал сообщения
+                    conversationPartnerId: userId,
                 });
             }
         } catch (error) {

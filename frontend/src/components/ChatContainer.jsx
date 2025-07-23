@@ -17,10 +17,6 @@ function ChatContainer() {
     useEffect(() => {
         if (selectedUser?._id) {
             useChatStore.getState().getMessages(selectedUser._id);
-            const unsubscribe = useChatStore.getState().subscribeToMessages();
-            return unsubscribe;
-        } else {
-            useChatStore.setState({ messages: [], isMessagesLoading: false });
         }
     }, [selectedUser?._id]);
 
@@ -33,6 +29,7 @@ function ChatContainer() {
             socket.emit("markMessagesAsRead", {
                 otherUserId: selectedUser._id,
             });
+            useChatStore.getState().clearUnreadCountFor(selectedUser._id);
         }
     }, [socket, selectedUser, messages]);
 
@@ -74,26 +71,12 @@ function ChatContainer() {
                                 </div>
                             </div>
                             <div className="chat-bubble flex flex-col max-w-xs md:max-w-md lg:max-w-lg relative">
-                                {" "}
-                                {/* Добавлен relative для лоадера */}
-                                {message.isSending && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-base-300/80 rounded-md z-10">
-                                        <span className="loading loading-spinner loading-md text-primary"></span>
-                                    </div>
-                                )}
                                 {message.image && (
                                     <img
                                         src={message.image}
-                                        alt={t("chat.attachmentAlt", {
-                                            defaultValue: "Attachment",
-                                        })}
-                                        className={`rounded-md mb-1.5 cursor-pointer ${
-                                            message.isSending
-                                                ? "opacity-50"
-                                                : ""
-                                        }`}
+                                        alt="Attachment"
+                                        className="rounded-md mb-1.5 cursor-pointer"
                                         onClick={() =>
-                                            !message.isSending &&
                                             window.open(message.image, "_blank")
                                         }
                                     />
@@ -102,22 +85,7 @@ function ChatContainer() {
                                     <video
                                         src={message.video}
                                         controls
-                                        className={`rounded-md mb-1.5 bg-black ${
-                                            message.isSending
-                                                ? "opacity-50"
-                                                : ""
-                                        }`}
-                                        onClick={(e) => {
-                                            if (
-                                                e.target.tagName !== "VIDEO" &&
-                                                !message.isSending
-                                            ) {
-                                                window.open(
-                                                    message.video,
-                                                    "_blank"
-                                                );
-                                            }
-                                        }}
+                                        className="rounded-md mb-1.5 bg-black"
                                     />
                                 )}
                                 {message.text && (
@@ -127,14 +95,11 @@ function ChatContainer() {
                                 )}
                             </div>
                             <div className="chat-footer opacity-50 text-xs mt-1 flex items-center gap-1.5">
-                                {message.createdAt
-                                    ? formatMessageTime(
-                                          message.createdAt,
-                                          t,
-                                          i18n.language
-                                      )
-                                    : "..."}
-
+                                {formatMessageTime(
+                                    message.createdAt,
+                                    t,
+                                    i18n.language
+                                )}
                                 {isOwnMessage && (
                                     <span className="text-base-content/80">
                                         {message.status === "read" ? (
