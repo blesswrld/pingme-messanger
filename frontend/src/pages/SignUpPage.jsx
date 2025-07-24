@@ -234,7 +234,7 @@ const SignUpPage = () => {
                         {/* Google Button - светлая с рамкой */}
                         <button
                             type="button"
-                            className="btn bg-white text-black border-[#e5e5e5] transition-colors hover:bg-transparent/10 duration-200"
+                            className="btn bg-white text-black border border-[#e5e5e5] hover:bg-gray-100 dark:bg-zinc-900 dark:text-white dark:border-black dark:hover:opacity-70 duration-200 transition-all"
                             // onClick={handleGoogleAuth}
                         >
                             <svg
