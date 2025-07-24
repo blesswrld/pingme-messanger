@@ -287,6 +287,11 @@ const SignUpPage = () => {
                             {t("loginPage.loginWithGitHub")}
                         </button>
                     </div>
+
+                    <p className="text-center text-sm">
+                        {t("loginPage.GoogleGitHubServices")}
+                    </p>
+
                     <div
                         tabIndex={0}
                         className="collapse collapse-plus bg-base-100 border-base-300 border"

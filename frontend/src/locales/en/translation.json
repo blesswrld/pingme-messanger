@@ -128,11 +128,12 @@
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create account",
         "howToCreateTitle": "How do I create an account?",
-        "howToCreateContent": "Click the \"Create account\" link above or continue with Google or GitHub account.",
+        "howToCreateContent": "Click the \"Create account\" link above or continue with Google or GitHub account. (not available yet)",
         "emailRequired": "Email is required",
         "invalidEmail": "Invalid email format",
         "passwordRequired": "Password is required",
-        "passwordMinLength": "Password must be at least 6 characters"
+        "passwordMinLength": "Password must be at least 6 characters",
+        "GoogleGitHubServices": "Registration via Google and GitHub services is not yet available.."
     },
     "signUpPage": {
         "createAccountTitle": "Create Account",
@@ -143,9 +144,10 @@
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
         "howToSignInTitle": "What if I already have an account?",
-        "howToSignInContent": "Click the \"Sign in\" link above or continue with Google or GitHub account",
+        "howToSignInContent": "Click the \"Sign in\" link above or continue with Google or GitHub account. (not available yet)",
         "usernameRequired": "Username is required",
-        "usernameInvalidFormat": "Username must be 3 to 30 characters, containing only letters, numbers, or dash"
+        "usernameInvalidFormat": "Username must be 3 to 30 characters, containing only letters, numbers, or dash",
+        "GoogleGitHubServices": "Login via Google and GitHub services is not yet available.."
     },
     "settingsPage": {
         "themes": {

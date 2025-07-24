@@ -23,7 +23,7 @@ export const useFormValidation = (initialState) => {
             case "fullName":
                 if (!value.trim()) error = t("signUpPage.usernameRequired");
                 else if (value.trim().length < 3 || value.trim().length > 30)
-                    error = t("signUpPage.usernameLengthError");
+                    error = t("signUpPage.usernameHint");
                 break;
             case "email":
                 if (!value) error = t("loginPage.emailRequired");
@@ -52,7 +52,7 @@ export const useFormValidation = (initialState) => {
                 values.fullName.trim().length < 3 ||
                 values.fullName.trim().length > 30
             )
-                newErrors.fullName = t("signUpPage.usernameLengthError");
+                newErrors.fullName = t("signUpPage.usernameHint");
         }
         if (!values.email) newErrors.email = t("loginPage.emailRequired");
         else if (!/\S+@\S+\.\S+/.test(values.email))
@@ -61,6 +61,7 @@ export const useFormValidation = (initialState) => {
             newErrors.password = t("loginPage.passwordRequired");
         else if (values.password.length < 6)
             newErrors.password = t("loginPage.passwordMinLength");
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };

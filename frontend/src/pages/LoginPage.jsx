@@ -226,6 +226,10 @@ const LoginPage = () => {
                         </button>
                     </div>
 
+                    <p className="text-center text-sm">
+                        {t("signUpPage.GoogleGitHubServices")}
+                    </p>
+
                     <div className="text-center mt-4">
                         <p className="text-base-content/60">
                             {t("loginPage.noAccount")}{" "}

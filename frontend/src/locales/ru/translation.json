@@ -134,11 +134,12 @@
         "noAccount": "Нет аккаунта?",
         "createAccountLink": "Создать аккаунт",
         "howToCreateTitle": "Как создать аккаунт?",
-        "howToCreateContent": "Нажмите ссылку \"Создать аккаунт\" выше или продолжите с аккаунтом Google или GitHub.",
+        "howToCreateContent": "Нажмите ссылку \"Создать аккаунт\" выше или продолжите с аккаунтом Google или GitHub. (пока что недоступно)",
         "emailRequired": "Требуется адрес электронной почты",
         "invalidEmail": "Неверный формат электронной почты",
         "passwordRequired": "Требуется пароль",
-        "passwordMinLength": "Пароль должен содержать не менее 6 символов"
+        "passwordMinLength": "Пароль должен содержать не менее 6 символов",
+        "GoogleGitHubServices": "Регистрация через сервисы Google и GitHub пока что недоступны.."
     },
     "signUpPage": {
         "createAccountTitle": "Создать аккаунт",
@@ -149,9 +150,10 @@
         "haveAccount": "Уже есть аккаунт?",
         "signInLink": "Войти",
         "howToSignInTitle": "Что если у меня уже есть аккаунт?",
-        "howToSignInContent": "Нажмите ссылку \"Войти\" выше или продолжите с аккаунтом Google или GitHub",
+        "howToSignInContent": "Нажмите ссылку \"Войти\" выше или продолжите с аккаунтом Google или GitHub (пока что недоступно)",
         "usernameRequired": "Требуется имя пользователя",
-        "usernameInvalidFormat": "Имя пользователя должно содержать от 3 до 30 символов, только буквы, цифры или дефис"
+        "usernameInvalidFormat": "Имя пользователя должно содержать от 3 до 30 символов, только буквы, цифры или дефис",
+        "GoogleGitHubServices": "Вход через сервисы Google и GitHub пока что недоступны.."
     },
     "settingsPage": {
         "themes": {
