@@ -9,6 +9,35 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 
 config();
 
+const checkAndAwardAchievements = async (user) => {
+    const achievementsToAward = [];
+    const messagesSent = user.stats.messagesSent;
+
+    const achievementTiers = [
+        { id: "MSG_10", count: 10, name: "Новичок" },
+        { id: "MSG_100", count: 100, name: "Завсегдатай" },
+        { id: "MSG_1000", count: 1000, name: "Мастер общения" },
+        { id: "MSG_10000", count: 10000, name: "Легенда PingMe" },
+    ];
+
+    for (const tier of achievementTiers) {
+        if (
+            messagesSent >= tier.count &&
+            !user.achievements.includes(tier.id)
+        ) {
+            achievementsToAward.push(tier.id);
+        }
+    }
+
+    if (achievementsToAward.length > 0) {
+        user.achievements.push(...achievementsToAward);
+        await user.save();
+        console.log(
+            `User ${user.fullName} awarded achievements: ${achievementsToAward.join(", ")}`
+        );
+    }
+};
+
 export const getUsersForSidebar = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
@@ -162,6 +191,13 @@ export const sendMessage = async (req, res) => {
             video: videoUrl,
             status: "sent",
         });
+
+        const sender = await User.findById(senderId);
+        if (sender) {
+            sender.stats.messagesSent = (sender.stats.messagesSent || 0) + 1;
+            await checkAndAwardAchievements(sender);
+            await sender.save();
+        }
 
         await newMessage.save();
         // console.log(`[sendMessage] From ${senderId} to ${receiverId}: Message saved successfully.`); // Меньше логов

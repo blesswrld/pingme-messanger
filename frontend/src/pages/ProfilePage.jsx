@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import AchievementBadge from "../components/AchievementBadge";
 
 // Компонент палитры
 const ThemePalette = ({ currentTheme, onThemeChange, isLoading }) => {
@@ -117,8 +118,16 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { userId } = useParams();
 
-    const [profileUserData, setProfileUserData] = useState(null);
-    const [isProfileLoading, setIsProfileLoading] = useState(true);
+    const isViewingOwnProfile =
+        !userId || (authUser && userId === authUser._id);
+
+    const [otherUserData, setOtherUserData] = useState(null);
+    const [isProfileLoading, setIsProfileLoading] = useState(
+        !isViewingOwnProfile
+    );
+
+    const profileUserData = isViewingOwnProfile ? authUser : otherUserData;
+
     const [selectedImg, setSelectedImg] = useState(null);
     const [bio, setBio] = useState("");
     const [isBioEditing, setIsBioEditing] = useState(false);
@@ -126,42 +135,36 @@ const ProfilePage = () => {
     const [isUsernameEditing, setIsUsernameEditing] = useState(false);
     const fileInputRef = useRef(null);
 
-    const isViewingOwnProfile =
-        !userId || (authUser && userId === authUser._id);
-
     useEffect(() => {
-        const fetchProfileData = async () => {
+        const fetchOtherUserData = async () => {
+            if (isViewingOwnProfile) {
+                setIsProfileLoading(false);
+                return;
+            }
             setIsProfileLoading(true);
             try {
-                let userData;
-                if (isViewingOwnProfile) {
-                    userData = authUser;
-                } else {
-                    const res = await axiosInstance.get(
-                        `/users/profile/${userId}`
-                    );
-                    userData = res.data;
-                }
-                setProfileUserData(userData);
-                setBio(userData?.bio || "");
-                setUsername(userData?.fullName || "");
+                const res = await axiosInstance.get(`/users/profile/${userId}`);
+                setOtherUserData(res.data);
             } catch (error) {
                 console.error("Error fetching profile data:", error);
                 toast.error(t("profilePage.errorLoadingProfile"));
-                setProfileUserData(null);
+                setOtherUserData(null);
             } finally {
                 setIsProfileLoading(false);
             }
         };
 
-        if (authUser && isViewingOwnProfile) {
-            fetchProfileData();
-        } else if (userId) {
-            fetchProfileData();
-        } else if (!userId && !authUser && !isCheckingAuth) {
-            setIsProfileLoading(false);
+        if (!isCheckingAuth) {
+            fetchOtherUserData();
         }
-    }, [userId, authUser, isViewingOwnProfile, isCheckingAuth, t]);
+    }, [userId, isViewingOwnProfile, isCheckingAuth]);
+
+    useEffect(() => {
+        if (profileUserData) {
+            setBio(profileUserData.bio || "");
+            setUsername(profileUserData.fullName || "");
+        }
+    }, [profileUserData]);
 
     const handleUpdateProfilePic = useCallback(
         async (base64Image) => {
@@ -608,6 +611,29 @@ const ProfilePage = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+
+                <div className="card max-w-3xl mx-auto bg-base-100 shadow-xl p-6 md:p-8 mt-8">
+                    <div className="card-body p-0">
+                        <h2 className="text-lg font-medium text-base-content mb-4">
+                            {t("achievements.title")}
+                        </h2>
+                        {profileUserData?.achievements &&
+                        profileUserData.achievements.length > 0 ? (
+                            <div className="flex flex-wrap gap-4">
+                                {profileUserData.achievements.map((achId) => (
+                                    <AchievementBadge
+                                        key={achId}
+                                        achievementId={achId}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-base-content/70 italic">
+                                {t("achievements.noAchievements")}
+                            </p>
+                        )}
                     </div>
                 </div>
 

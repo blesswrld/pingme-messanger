@@ -26,6 +26,13 @@ const userSchema = new mongoose.Schema(
             default: "",
         },
         profileTheme: { type: String, default: "primary" },
+        stats: {
+            messagesSent: {
+                type: Number,
+                default: 0,
+            },
+        },
+        achievements: [String],
     },
     { timestamps: true }
 );

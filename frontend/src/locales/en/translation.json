@@ -187,5 +187,17 @@
         "loginSubtitle": "Sign in to continue your conversations and catch up with your messages.",
         "signUpTitle": "Join our community",
         "signUpSubtitle": "Connect with friends, share moments, and stay in touch with your loved ones"
+    },
+    "authImagePattern": {},
+    "achievements": {
+        "title": "Achievements",
+        "noAchievements": "This user has no achievements yet.",
+        "MSG_10": { "name": "Chatterbox", "desc": "Sent 10 messages" },
+        "MSG_100": { "name": "Social Butterfly", "desc": "Sent 100 messages" },
+        "MSG_1000": {
+            "name": "Communication Master",
+            "desc": "Sent 1,000 messages"
+        },
+        "MSG_10000": { "name": "PingMe Legend", "desc": "Sent 10,000 messages" }
     }
 }
