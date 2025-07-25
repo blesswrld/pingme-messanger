@@ -10,6 +10,7 @@ export const useAuthStore = create((set, get) => ({
     authUser: null,
     isSigningUp: false,
     isLoggingIn: false,
+    isUpdatingProfilePic: false,
     isUpdatingProfile: false,
     isUpdatingBio: false,
     isUpdatingUsername: false,
@@ -89,7 +90,7 @@ export const useAuthStore = create((set, get) => ({
 
             set({ authUser: res.data });
             toast.success(i18n.t("profilePage.profilePicUpdateSuccess"));
-            return true;
+            return res.data;
         } catch (error) {
             console.log("Error in update profile:", error);
             toast.error(
@@ -101,6 +102,7 @@ export const useAuthStore = create((set, get) => ({
             set({ isUpdatingProfilePic: false });
         }
     },
+
     updateBio: async (bio) => {
         set({ isUpdatingBio: true });
         try {
@@ -121,6 +123,7 @@ export const useAuthStore = create((set, get) => ({
             set({ isUpdatingBio: false });
         }
     },
+
     updateUsername: async (fullName) => {
         set({ isUpdatingUsername: true });
 
@@ -143,6 +146,7 @@ export const useAuthStore = create((set, get) => ({
             set({ isUpdatingUsername: false });
         }
     },
+
     updateProfileTheme: async (theme) => {
         set({ isUpdatingTheme: true });
         try {
@@ -167,6 +171,7 @@ export const useAuthStore = create((set, get) => ({
             set({ isUpdatingTheme: false });
         }
     },
+
     connectSocket: () => {
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;

@@ -118,16 +118,8 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { userId } = useParams();
 
-    const isViewingOwnProfile =
-        !userId || (authUser && userId === authUser._id);
-
-    const [otherUserData, setOtherUserData] = useState(null);
-    const [isProfileLoading, setIsProfileLoading] = useState(
-        !isViewingOwnProfile
-    );
-
-    const profileUserData = isViewingOwnProfile ? authUser : otherUserData;
-
+    const [profileUserData, setProfileUserData] = useState(null);
+    const [isProfileLoading, setIsProfileLoading] = useState(true);
     const [selectedImg, setSelectedImg] = useState(null);
     const [bio, setBio] = useState("");
     const [isBioEditing, setIsBioEditing] = useState(false);
@@ -135,29 +127,31 @@ const ProfilePage = () => {
     const [isUsernameEditing, setIsUsernameEditing] = useState(false);
     const fileInputRef = useRef(null);
 
+    const isViewingOwnProfile = authUser && userId === authUser._id;
+
     useEffect(() => {
-        const fetchOtherUserData = async () => {
-            if (isViewingOwnProfile) {
-                setIsProfileLoading(false);
-                return;
-            }
+        const fetchProfileData = async () => {
+            const targetUserId = userId;
+            if (!targetUserId) return;
             setIsProfileLoading(true);
             try {
-                const res = await axiosInstance.get(`/users/profile/${userId}`);
-                setOtherUserData(res.data);
+                const res = await axiosInstance.get(
+                    `/users/profile/${targetUserId}`
+                );
+                setProfileUserData(res.data);
             } catch (error) {
                 console.error("Error fetching profile data:", error);
                 toast.error(t("profilePage.errorLoadingProfile"));
-                setOtherUserData(null);
+                setProfileUserData(null);
             } finally {
                 setIsProfileLoading(false);
             }
         };
 
         if (!isCheckingAuth) {
-            fetchOtherUserData();
+            fetchProfileData();
         }
-    }, [userId, isViewingOwnProfile, isCheckingAuth]);
+    }, [userId, isCheckingAuth, t, authUser]); // Добавляем authUser в зависимости, чтобы профиль обновлялся
 
     useEffect(() => {
         if (profileUserData) {
@@ -168,36 +162,31 @@ const ProfilePage = () => {
 
     const handleUpdateProfilePic = useCallback(
         async (base64Image) => {
-            const success = await updateProfilePic(base64Image);
-            if (success && authUser) {
+            const updatedUser = await updateProfilePic(base64Image);
+            if (updatedUser) {
+                // Обновляем локальное состояние после успешного ответа от сервера
                 setProfileUserData((prev) => ({
                     ...prev,
-                    profilePic: base64Image,
+                    profilePic: updatedUser.profilePic,
                 }));
-                setSelectedImg(null);
-            } else if (!success) {
-                setSelectedImg(null);
             }
+            setSelectedImg(null);
         },
-        [updateProfilePic, authUser]
+        [updateProfilePic]
     );
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
-        reader.onloadend = async () => {
+        reader.onloadend = () => {
             const base64Image = reader.result;
-            if (typeof base64Image !== "string") {
+            if (typeof base64Image === "string") {
+                setSelectedImg(base64Image);
+                handleUpdateProfilePic(base64Image);
+            } else {
                 toast.error(t("profilePage.failedToReadImage"));
-                return;
             }
-            setSelectedImg(base64Image);
-            handleUpdateProfilePic(base64Image);
-        };
-        reader.onerror = () => {
-            toast.error(t("profilePage.errorReadingFile"));
         };
         reader.readAsDataURL(file);
     };
@@ -207,9 +196,9 @@ const ProfilePage = () => {
             setIsBioEditing(false);
             return;
         }
-        const success = await updateBio(bio);
-        if (success) {
-            setProfileUserData((prev) => ({ ...prev, bio: bio }));
+        const updatedUser = await updateBio(bio);
+        if (updatedUser) {
+            setProfileUserData((prev) => ({ ...prev, bio: updatedUser.bio }));
         }
         setIsBioEditing(false);
     };
@@ -230,11 +219,11 @@ const ProfilePage = () => {
             toast.error(t("profilePage.usernameLengthError"));
             return;
         }
-        const success = await updateUsername(trimmedUsername);
-        if (success) {
+        const updatedUser = await updateUsername(trimmedUsername);
+        if (updatedUser) {
             setProfileUserData((prev) => ({
                 ...prev,
-                fullName: trimmedUsername,
+                fullName: updatedUser.fullName,
             }));
         }
         setIsUsernameEditing(false);

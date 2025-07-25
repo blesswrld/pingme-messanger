@@ -60,8 +60,8 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
     try {
+        const { email, password } = req.body;
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -76,13 +76,9 @@ export const login = async (req, res) => {
 
         generateToken(user._id, res);
 
-        res.status(200).json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            profilePic: user.profilePic,
-            bio: user.bio,
-        });
+        const userObject = user.toObject();
+        delete userObject.password;
+        res.status(200).json(userObject);
     } catch (error) {
         console.log("Error in login controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
@@ -332,9 +328,13 @@ export const updateProfileTheme = async (req, res) => {
     }
 };
 
-export const checkAuth = (req, res) => {
+export const checkAuth = async (req, res) => {
     try {
-        res.status(200).json(req.user);
+        const user = await User.findById(req.user._id).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json(user);
     } catch (error) {
         console.log("Error in checkAuth controller", error.message);
         res.status(500).json({ message: "Internal Server error" });
