@@ -32,7 +32,10 @@ const userSchema = new mongoose.Schema(
                 default: 0,
             },
         },
-        achievements: [String],
+        achievements: {
+            type: [String],
+            default: [],
+        },
     },
     { timestamps: true }
 );

@@ -192,6 +192,10 @@
     "achievements": {
         "title": "Achievements",
         "noAchievements": "This user has no achievements yet.",
+        "AppDeveloper": {
+            "name": "Developer",
+            "desc": "Creator of the messenger PingMe"
+        },
         "MSG_10": { "name": "Chatterbox", "desc": "Sent 10 messages" },
         "MSG_100": { "name": "Social Butterfly", "desc": "Sent 100 messages" },
         "MSG_1000": {

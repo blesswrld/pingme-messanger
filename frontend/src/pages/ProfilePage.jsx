@@ -622,12 +622,15 @@ const ProfilePage = () => {
                         {profileUserData?.achievements &&
                         profileUserData.achievements.length > 0 ? (
                             <div className="flex flex-wrap gap-4">
-                                {profileUserData.achievements.map((achId) => (
-                                    <AchievementBadge
-                                        key={achId}
-                                        achievementId={achId}
-                                    />
-                                ))}
+                                {profileUserData.achievements.map(
+                                    (achId, index) => (
+                                        <AchievementBadge
+                                            key={achId}
+                                            achievementId={achId}
+                                            index={index}
+                                        />
+                                    )
+                                )}
                             </div>
                         ) : (
                             <p className="text-base-content/70 italic">

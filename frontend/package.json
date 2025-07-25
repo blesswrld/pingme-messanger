@@ -14,7 +14,7 @@
         "@mantine/core": "^7.17.5",
         "@mantine/hooks": "^7.17.5",
         "axios": "^1.8.4",
-        "framer-motion": "^12.9.2",
+        "framer-motion": "^12.23.9",
         "heroicons": "^2.2.0",
         "i18next": "^25.2.1",
         "i18next-browser-languagedetector": "^8.1.0",

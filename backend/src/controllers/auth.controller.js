@@ -33,6 +33,11 @@ export const signup = async (req, res) => {
             bio,
         });
 
+        if (email === process.env.DEVELOPER_EMAIL) {
+            newUser.achievements.push("AppDeveloper");
+            console.log(`Developer achievement awarded to ${email}`);
+        }
+
         if (newUser) {
             // generate jwt token here
             generateToken(newUser._id, res);
