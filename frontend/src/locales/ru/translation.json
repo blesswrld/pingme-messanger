@@ -47,7 +47,8 @@
         "selectVideoError": "Выберите файл видео",
         "videoTooLarge": "Видеофайл слишком большой (макс. {{size}}MB).",
         "removeMedia": "Удалить медиа",
-        "attachVideo": "Прикрепить видео"
+        "attachVideo": "Прикрепить видео",
+        "emojiLabel": "Эмодзи"
     },
     "chat": {
         "attachmentAlt": "Вложение"

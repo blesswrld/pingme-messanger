@@ -45,7 +45,8 @@
         "selectVideoError": "Please select a video file.",
         "videoTooLarge": "Video file is too large (max {{size}}MB).",
         "removeMedia": "Remove Media",
-        "attachVideo": "Attach Video"
+        "attachVideo": "Attach Video",
+        "emojiLabel": "Emoji"
     },
     "chat": {
         "attachmentAlt": "Attachment"

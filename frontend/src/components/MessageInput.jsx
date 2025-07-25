@@ -1,17 +1,20 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { Image, Send, Video, X } from "lucide-react";
+import { Image, Send, Video, X, Smile } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import EmojiPicker from "emoji-picker-react";
 
 const MessageInput = () => {
     const { t } = useTranslation();
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const [videoPreview, setVideoPreview] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const imageFileInputRef = useRef(null);
     const videoFileInputRef = useRef(null);
     const textareaRef = useRef(null);
+    const emojiPickerRef = useRef(null);
     const { sendMessage, selectedUser, isSendingMessage } = useChatStore();
 
     useEffect(() => {
@@ -22,6 +25,26 @@ const MessageInput = () => {
             textarea.style.height = `${Math.min(scrollHeight, 120)}px`;
         }
     }, [text]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                emojiPickerRef.current &&
+                !emojiPickerRef.current.contains(event.target)
+            ) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const onEmojiClick = (emojiObject) => {
+        setText((prevText) => prevText + emojiObject.emoji);
+        setShowEmojiPicker(false);
+    };
 
     const clearMedia = () => {
         setImagePreview(null);
@@ -144,6 +167,19 @@ const MessageInput = () => {
 
     return (
         <div className="p-4 border-t border-base-300 bg-base-100 md:bg-base-200 md:rounded-br-lg">
+            {showEmojiPicker && (
+                <div
+                    ref={emojiPickerRef}
+                    className="absolute bottom-20 right-4 z-20"
+                >
+                    <EmojiPicker
+                        onEmojiClick={onEmojiClick}
+                        height={400}
+                        width={350}
+                        theme="auto"
+                    />
+                </div>
+            )}
             {(imagePreview || videoPreview) && (
                 <div className="mb-2 relative w-32 h-32 group flex items-center justify-center rounded-lg border border-base-300 overflow-hidden">
                     {imagePreview && (
@@ -187,12 +223,26 @@ const MessageInput = () => {
 
                 {/* Buttons Group */}
                 <div className="flex items-end flex-shrink-0">
-                    {/* Кнопка прикрепления изображения */}
+                    <div
+                        className="tooltip"
+                        data-tip={t("chatInput.emojiLabel", "Emoji")}
+                    >
+                        <button
+                            type="button"
+                            className="btn btn-ghost btn-circle text-base-content/50"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowEmojiPicker(!showEmojiPicker);
+                            }}
+                            disabled={isSendingMessage}
+                        >
+                            <Smile className="w-5 h-5" />
+                        </button>
+                    </div>
                     <div
                         className="tooltip"
                         data-tip={t("chatInput.attachImage")}
                     >
-                        {" "}
                         {/* <--- Перевод */}
                         <button
                             type="button"
@@ -254,7 +304,6 @@ const MessageInput = () => {
                                 className="tooltip"
                                 data-tip={t("chatInput.sendMessage")}
                             >
-                                {" "}
                                 {/* <--- Перевод */}
                                 <button
                                     type="submit"

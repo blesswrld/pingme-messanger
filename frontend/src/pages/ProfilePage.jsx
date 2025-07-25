@@ -315,7 +315,7 @@ const ProfilePage = () => {
             <div className="max-w-4xl mx-auto px-4">
                 <div className="relative mb-24">
                     <div
-                        className={`h-48 rounded-box shadow-lg transition-all duration-500 bg-gradient-to-r ${currentGradient}`}
+                        className={`h-48 rounded-box shadow-lg transition-all duration-500 bg-gradient-to-r mt-2 ${currentGradient}`}
                     >
                         {isViewingOwnProfile && (
                             <div className="absolute top-2 right-2">
