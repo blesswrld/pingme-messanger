@@ -36,6 +36,28 @@ const userSchema = new mongoose.Schema(
             type: [String],
             default: [],
         },
+        privacySettings: {
+            email: {
+                visibility: {
+                    type: String,
+                    enum: ["everyone", "contacts", "specific"],
+                    default: "everyone",
+                },
+                allowed: [
+                    { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                ],
+            },
+            bio: {
+                visibility: {
+                    type: String,
+                    enum: ["everyone", "contacts", "specific"],
+                    default: "everyone",
+                },
+                allowed: [
+                    { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                ],
+            },
+        },
     },
     { timestamps: true }
 );

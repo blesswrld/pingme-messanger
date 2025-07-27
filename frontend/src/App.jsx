@@ -10,6 +10,8 @@ import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import useThemeStore from "./store/useThemeStore";
+import ThemeSettings from "./pages/ThemeSettings";
+import PrivacySettingsPage from "./pages/PrivacySettingsPage";
 
 export const App = () => {
     const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -45,7 +47,16 @@ export const App = () => {
                     path="/login"
                     element={!authUser ? <LoginPage /> : <Navigate to="/" />}
                 />
-                <Route path="/settings" element={<SettingsPage />} />
+                <Route
+                    path="/settings"
+                    element={
+                        authUser ? <SettingsPage /> : <Navigate to="/login" />
+                    }
+                >
+                    <Route index element={<Navigate to="themes" replace />} />
+                    <Route path="themes" element={<ThemeSettings />} />
+                    <Route path="privacy" element={<PrivacySettingsPage />} />
+                </Route>
                 <Route
                     path="/profile"
                     element={

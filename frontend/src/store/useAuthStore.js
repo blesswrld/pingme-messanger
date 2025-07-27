@@ -18,6 +18,7 @@ export const useAuthStore = create((set, get) => ({
     onlineUsers: [],
     socket: null,
     isUpdatingTheme: false,
+    isUpdatingPrivacy: false,
 
     checkAuth: async () => {
         try {
@@ -169,6 +170,22 @@ export const useAuthStore = create((set, get) => ({
             return false;
         } finally {
             set({ isUpdatingTheme: false });
+        }
+    },
+
+    updatePrivacySettings: async (settings) => {
+        set({ isUpdatingPrivacy: true });
+        try {
+            const res = await axiosInstance.put("/users/privacy", { settings });
+            set({ authUser: res.data });
+            toast.success(i18n.t("settingsPage.privacy.privacyUpdatedSuccess"));
+            return true;
+        } catch (error) {
+            console.error("Error updating privacy settings:", error);
+            toast.error(i18n.t("settingsPage.privacy.privacyUpdatedError"));
+            return false;
+        } finally {
+            set({ isUpdatingPrivacy: false });
         }
     },
 

@@ -170,8 +170,19 @@
             "msg1": "Hey! How's it going?",
             "msg2": "Great! And you?",
             "msg3": "Not bad, thanks for asking :)"
+        },
+        "privacyTitle": "Privacy",
+        "privacySubtitle": "Control who can see your information.",
+        "privacy": {
+            "everyone": "Everyone",
+            "contacts": "My Contacts",
+            "whoCanSeeEmail": "Who can see your email?",
+            "whoCanSeeBio": "Who can see your bio?",
+            "privacyUpdatedSuccess": "Privacy settings updated!",
+            "privacyUpdatedError": "Failed to update settings."
         }
     },
+
     "userSearch": {
         "placeholder": "Search users...",
         "clearSearch": "Clear search",

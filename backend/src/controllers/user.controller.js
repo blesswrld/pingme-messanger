@@ -97,17 +97,82 @@ export const getConversationPartners = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try {
-        const { id } = req.params;
-        const user = await User.findById(id).select("-password");
+        const { id: profileUserId } = req.params;
+        const requestingUserId = req.user._id;
 
-        if (!user) {
+        const profileUser =
+            await User.findById(profileUserId).select("-password");
+        if (!profileUser) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        res.status(200).json(user);
+        // Если пользователь смотрит свой собственный профиль, отдаем все данные
+        if (profileUser._id.equals(requestingUserId)) {
+            return res.status(200).json(profileUser);
+        }
+
+        // Иначе, проверяем настройки приватности
+        const profileData = profileUser.toObject();
+
+        // Проверка для Email
+        const emailPrivacy = profileUser.privacySettings.email;
+        if (emailPrivacy.visibility === "contacts") {
+            const conversationExists = await Message.findOne({
+                $or: [
+                    { senderId: requestingUserId, receiverId: profileUserId },
+                    { senderId: profileUserId, receiverId: requestingUserId },
+                ],
+            });
+            if (!conversationExists) delete profileData.email;
+        } else if (emailPrivacy.visibility === "specific") {
+            if (
+                !emailPrivacy.allowed.some((id) => id.equals(requestingUserId))
+            ) {
+                delete profileData.email;
+            }
+        }
+
+        // Проверка для Bio
+        const bioPrivacy = profileUser.privacySettings.bio;
+        if (bioPrivacy.visibility === "contacts") {
+            const conversationExists = await Message.findOne({
+                $or: [
+                    { senderId: requestingUserId, receiverId: profileUserId },
+                    { senderId: profileUserId, receiverId: requestingUserId },
+                ],
+            });
+            if (!conversationExists) delete profileData.bio;
+        } else if (bioPrivacy.visibility === "specific") {
+            if (!bioPrivacy.allowed.some((id) => id.equals(requestingUserId))) {
+                delete profileData.bio;
+            }
+        }
+
+        res.status(200).json(profileData);
     } catch (error) {
         console.error("Error in getUserProfile controller:", error.message);
 
         res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+export const updatePrivacySettings = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { settings } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        user.privacySettings = settings;
+        await user.save();
+
+        const updatedUser = await User.findById(userId).select("-password");
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        console.error("Error in updatePrivacySettings:", error.message);
+        res.status(500).json({ error: "Internal Server error" });
     }
 };
