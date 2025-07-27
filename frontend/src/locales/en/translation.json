@@ -208,6 +208,14 @@
             "name": "Developer",
             "desc": "Creator of the messenger PingMe"
         },
+        "FrontendDeveloper": {
+            "name": "Frontend Dev",
+            "desc": "Skilled in creating user interfaces"
+        },
+        "ReactDeveloper": {
+            "name": "React Dev",
+            "desc": "Master of the React library"
+        },
         "MSG_10": { "name": "Chatterbox", "desc": "Sent 10 messages" },
         "MSG_100": { "name": "Social Butterfly", "desc": "Sent 100 messages" },
         "MSG_1000": {

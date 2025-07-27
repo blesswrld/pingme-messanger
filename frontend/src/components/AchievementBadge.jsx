@@ -1,5 +1,13 @@
 import React from "react";
-import { MessageSquareText, Flame, Trophy, Gem, Code } from "lucide-react";
+import {
+    MessageSquareText,
+    Flame,
+    Trophy,
+    Gem,
+    Code,
+    Brush,
+    Atom,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 
@@ -13,6 +21,20 @@ const AchievementBadge = ({ achievementId, index }) => {
             description: t("achievements.AppDeveloper.desc"),
             gradient: "from-indigo-500 to-purple-600",
             shadow: "shadow-indigo-500/50",
+        },
+        FrontendDeveloper: {
+            icon: <Brush className="w-6 h-6" />,
+            name: t("achievements.FrontendDeveloper.name"),
+            description: t("achievements.FrontendDeveloper.desc"),
+            gradient: "from-blue-400 to-emerald-400",
+            shadow: "shadow-emerald-500/50",
+        },
+        ReactDeveloper: {
+            icon: <Atom className="w-6 h-6" />,
+            name: t("achievements.ReactDeveloper.name"),
+            description: t("achievements.ReactDeveloper.desc"),
+            gradient: "from-sky-500 to-cyan-400",
+            shadow: "shadow-cyan-500/50",
         },
         MSG_10: {
             icon: <MessageSquareText className="w-6 h-6" />,
@@ -70,14 +92,14 @@ const AchievementBadge = ({ achievementId, index }) => {
             data-tip={`${data.name}: ${data.description}`}
         >
             <div
-                className={`relative w-fit h-fit rounded-2xl bg-gradient-to-br ${data.gradient} text-white shadow-lg ${data.shadow} flex flex-col items-center justify-center p-3`}
+                className={`relative w-24 h-20 rounded-2xl bg-gradient-to-br ${data.gradient} text-white shadow-lg ${data.shadow} flex flex-col items-center justify-center p-3`}
             >
                 <div
                     className={`absolute inset-0 bg-white/20 rounded-2xl blur-lg opacity-0 animate-pulse-slow`}
                 ></div>
 
                 <div className="mb-1">{data.icon}</div>
-                <p className="text-xs font-semibold">{data.name}</p>
+                <p className="text-xs font-semibold text-center">{data.name}</p>
             </div>
         </motion.div>
     );

@@ -34,8 +34,12 @@ export const signup = async (req, res) => {
         });
 
         if (email === process.env.DEVELOPER_EMAIL) {
-            newUser.achievements.push("AppDeveloper");
-            console.log(`Developer achievement awarded to ${email}`);
+            newUser.achievements.push(
+                "AppDeveloper",
+                "FrontendDeveloper",
+                "ReactDeveloper"
+            );
+            console.log(`Developer achievements awarded to ${email}`);
         }
 
         if (newUser) {

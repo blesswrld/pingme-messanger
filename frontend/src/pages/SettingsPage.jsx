@@ -12,11 +12,17 @@ const SettingsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Навигация по настройкам */}
                     <aside className="md:col-span-1">
-                        <ul className="menu bg-base-100 rounded-box shadow-lg">
+                        <ul className="menu rounded-box shadow-lg">
                             <li>
                                 <NavLink
                                     to="/settings/themes"
-                                    className="text-base"
+                                    className={({ isActive }) =>
+                                        `text-base ${
+                                            isActive
+                                                ? "bg-primary text-primary-content"
+                                                : ""
+                                        }`
+                                    }
                                 >
                                     <Paintbrush size={18} />
                                     {t("settingsPage.themeTitle")}
@@ -25,7 +31,13 @@ const SettingsPage = () => {
                             <li>
                                 <NavLink
                                     to="/settings/privacy"
-                                    className="text-base"
+                                    className={({ isActive }) =>
+                                        `text-base ${
+                                            isActive
+                                                ? "bg-primary text-primary-content"
+                                                : ""
+                                        }`
+                                    }
                                 >
                                     <Shield size={18} />
                                     {t("settingsPage.privacyTitle", "Privacy")}
