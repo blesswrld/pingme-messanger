@@ -137,28 +137,43 @@ const Navbar = () => {
 
                 {authUser && (
                     <>
-                        <div
-                            className="tooltip tooltip-bottom"
-                            data-tip={t("navbar.profile")}
-                        >
-                            <Link
-                                to={"/profile"}
-                                className="btn btn-ghost btn-circle"
+                        <div className="dropdown dropdown-end">
+                            <div
+                                tabIndex={0}
+                                role="button"
+                                className="btn btn-ghost btn-circle avatar"
+                                data-tip={t("navbar.profile")}
                             >
-                                <User className="w-5 h-5" />
-                            </Link>
-                        </div>
-
-                        <div
-                            className="tooltip tooltip-bottom"
-                            data-tip={t("navbar.logout")}
-                        >
-                            <button
-                                className="btn btn-ghost btn-circle"
-                                onClick={logout}
+                                <div className="w-10 rounded-full">
+                                    <img
+                                        src={
+                                            authUser.profilePic || "/avatar.png"
+                                        }
+                                        alt="User Profile"
+                                    />
+                                </div>
+                            </div>
+                            <ul
+                                tabIndex={0}
+                                className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-300 rounded-box w-52"
                             >
-                                <LogOut className="w-5 h-5" />
-                            </button>
+                                <li>
+                                    <Link to="/profile">
+                                        <User className="w-4 h-4" />
+                                        {t("navbar.profile")}
+                                    </Link>
+                                </li>
+                                <div className="divider my-1"></div>
+                                <li>
+                                    <button
+                                        onClick={logout}
+                                        className="text-error"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        {t("navbar.logout")}
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </>
                 )}
