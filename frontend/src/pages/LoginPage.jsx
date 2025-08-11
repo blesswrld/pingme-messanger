@@ -256,7 +256,7 @@ const LoginPage = () => {
             </div>
 
             <AuthImagePattern
-                titleKey="authImagePattern.loginTitle"
+                titleKey={t("authImagePattern.loginTitle")}
                 subtitleKey="authImagePattern.loginSubtitle"
             />
         </div>
