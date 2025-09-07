@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.menu :where(li) > *:not(.active, ul, .menu-title, details, .btn):active,
+.menu :where(li) > *:not(.active, ul, .menu-title, details, .btn):focus,
+.menu :where(li) > details > summary:not(.active):active {
+    background-color: oklch(45% 0.24 277.023) !important;
+}
+
+.menu :where(li) > *:not(ul, .menu-title, details, .btn):active,
+.menu :where(li) > *:not(ul, .menu-title, details, .btn).menu-active,
+.menu :where(li) > details > summary:active {
+    background-color: oklch(45% 0.24 277.023) !important;
+    color: #fff;
+}
+
+.menu :where(li) > *:not(.active, ul, .menu-title, details, .btn):active,
+.menu :where(li) > *:not(.active, ul, .menu-title, details, .btn):focus,
+.menu :where(li) > details > summary:not(.active):active {
+    background-color: oklch(45% 0.24 277.023) !important;
+    color: #fff;
+}

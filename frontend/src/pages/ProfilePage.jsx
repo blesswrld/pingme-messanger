@@ -215,7 +215,7 @@ const ProfilePage = () => {
             setUsername(profileUserData?.fullName || "");
             return;
         }
-        if (trimmedUsername.length < 3 || trimmedUsername.length > 30) {
+        if (trimmedUsername.length < 2 || trimmedUsername.length > 30) {
             toast.error(t("profilePage.usernameLengthError"));
             return;
         }
@@ -443,7 +443,7 @@ const ProfilePage = () => {
                                                         isUpdatingUsername ||
                                                         !username.trim() ||
                                                         username.trim().length <
-                                                            3 ||
+                                                            2 ||
                                                         username.trim() ===
                                                             profileUserData?.fullName
                                                     }

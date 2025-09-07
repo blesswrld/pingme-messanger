@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Добавлен useEffect
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // Добавлен useLocation
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useTranslation } from "react-i18next";
 import { useFormValidation, FormError } from "../hooks/useFormValidation.jsx";
+import toast from "react-hot-toast"; // Добавлен toast
 
 const SignUpPage = () => {
     const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
     const { signup, isSigningUp } = useAuthStore();
+    const location = useLocation(); // Получаем объект location для доступа к URL
 
     const { values, errors, touched, handleChange, handleBlur, validateAll } =
         useFormValidation({
@@ -25,14 +27,29 @@ const SignUpPage = () => {
         }
     };
 
-    // TODO: ADD INTEGRATION WITH GOOGLE AND GITHUB
-    // const handleGoogleAuth = () => {
-    //     window.location.href = "/api/auth/google"; // Перенаправление на бэкенд
-    // };
+    // ⭐ НОВЫЙ useEffect ДЛЯ ОБРАБОТКИ ОШИБОК ИЗ URL (аналогично LoginPage)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const error = params.get("error");
+        if (error) {
+            if (error === "oauth_failed") {
+                toast.error(t("signUpPage.oauthFailed")); // Можно использовать специфичный ключ для signUp
+            } else if (error === "registration_failed") {
+                toast.error(t("signUpPage.signupError"));
+            } else {
+                toast.error(t("signUpPage.genericError"));
+            }
+        }
+    }, [location.search, t]);
 
-    // const handleGitHubAuth = () => {
-    //     window.location.href = "/api/auth/github"; // Перенаправление на бэкенд
-    // };
+    // ⭐ РАЗКОММЕНТИРОВАНЫ ФУНКЦИИ GOOGLE И GITHUB
+    const handleGoogleAuth = () => {
+        window.location.href = "/api/auth/google"; // Перенаправление на бэкенд
+    };
+
+    const handleGitHubAuth = () => {
+        window.location.href = "/api/auth/github"; // Перенаправление на бэкенд
+    };
 
     return (
         <div className="min-h-screen grid lg:grid-cols-2">
@@ -235,7 +252,8 @@ const SignUpPage = () => {
                         <button
                             type="button"
                             className="btn bg-white text-black border border-[#e5e5e5] hover:bg-gray-100 dark:bg-zinc-900 dark:text-white dark:border-black dark:hover:opacity-70 duration-200 transition-all"
-                            // onClick={handleGoogleAuth}
+                            onClick={handleGoogleAuth} // ⭐ АКТИВИРОВАНО
+                            aria-label={t("loginPage.googleAuth")} // ⭐ Добавлено для доступности
                         >
                             <svg
                                 aria-label="Google logo"
@@ -270,7 +288,8 @@ const SignUpPage = () => {
                         <button
                             type="button"
                             className="btn bg-black text-white border-black transition-opacity hover:opacity-70 duration-200"
-                            // onClick={handleGitHubAuth}
+                            onClick={handleGitHubAuth} // ⭐ АКТИВИРОВАНО
+                            aria-label={t("loginPage.githubAuth")} // ⭐ Добавлено для доступности
                         >
                             <svg
                                 aria-label="GitHub logo"

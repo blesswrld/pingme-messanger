@@ -1,15 +1,17 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react"; // Добавлен useEffect
 import { useAuthStore } from "../store/useAuthStore";
 import AuthImagePattern from "../components/AuthImagePattern";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // Добавлен useLocation
 import { Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useFormValidation, FormError } from "../hooks/useFormValidation.jsx";
+import toast from "react-hot-toast"; // Добавлен toast
 
 const LoginPage = () => {
     const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
     const { login, isLoggingIn } = useAuthStore();
+    const location = useLocation(); // Получаем объект location для доступа к URL
 
     const { values, errors, handleChange, handleBlur, validateAll } =
         useFormValidation({
@@ -24,14 +26,33 @@ const LoginPage = () => {
         }
     };
 
-    // TODO: ADD INTEGRATION WITH GOOGLE AND GITHUB
-    // const handleGoogleAuth = () => {
-    //     window.location.href = "/api/auth/google"; // Перенаправление на бэкенд
-    // };
+    // ⭐ НОВЫЙ useEffect ДЛЯ ОБРАБОТКИ ОШИБОК ИЗ URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const error = params.get("error");
+        if (error) {
+            // Можно настроить различные сообщения в зависимости от типа ошибки
+            if (error === "oauth_failed") {
+                toast.error(t("loginPage.oauthFailed"));
+            } else if (error === "registration_failed") {
+                toast.error(t("signUpPage.signupError"));
+            } else {
+                toast.error(t("loginPage.genericError")); // Общая ошибка
+            }
+            // Очищаем URL от параметра ошибки, чтобы он не отображался при обновлении страницы
+            // Но будьте осторожны: это может привести к потере информации при перезагрузке
+            // history.replaceState({}, document.title, location.pathname); // Пример очистки
+        }
+    }, [location.search, t]);
 
-    // const handleGitHubAuth = () => {
-    //     window.location.href = "/api/auth/github"; // Перенаправление на бэкенд
-    // };
+    // ⭐ РАЗКОММЕНТИРОВАНЫ ФУНКЦИИ GOOGLE И GITHUB
+    const handleGoogleAuth = () => {
+        window.location.href = "/api/auth/google"; // Перенаправление на бэкенд
+    };
+
+    const handleGitHubAuth = () => {
+        window.location.href = "/api/auth/github"; // Перенаправление на бэкенд
+    };
 
     return (
         <div className="h-screen grid lg:grid-cols-2">
@@ -173,7 +194,8 @@ const LoginPage = () => {
                         <button
                             type="button"
                             className="btn bg-white text-black border border-[#e5e5e5] hover:bg-gray-100 dark:bg-zinc-900 dark:text-white dark:border-black dark:hover:opacity-70 duration-200 transition-all"
-                            // onClick={handleGoogleAuth}
+                            onClick={handleGoogleAuth} // ⭐ АКТИВИРОВАНО
+                            aria-label={t("loginPage.googleAuth")} // ⭐ Добавлено для доступности
                         >
                             <svg
                                 aria-label="Google logo"
@@ -207,8 +229,9 @@ const LoginPage = () => {
                         {/* GitHub Button - темная */}
                         <button
                             type="button"
-                            className="btn bg-black text-white border border-black hover:opacity-70 dark:bg-zinc-900 dark:border-black dark:hover:opacity-70 duration-200 transition-opacity"
-                            // onClick={handleGitHubAuth}
+                            className="btn bg-black text-white border border-black hover:opacity-70 dark:bg-zinc-900 dark:text-white dark:border-black dark:hover:opacity-70 duration-200 transition-opacity"
+                            onClick={handleGitHubAuth} // ⭐ АКТИВИРОВАНО
+                            aria-label={t("loginPage.githubAuth")} // ⭐ Добавлено для доступности
                         >
                             <svg
                                 aria-label="GitHub logo"

@@ -242,10 +242,10 @@ export const updateProfile = async (req, res) => {
                 console.log(
                     `[UpdateProfile] User ${userId}: Processing fullName (it's different).`
                 );
-                if (trimmedFullName.length < 3 || trimmedFullName.length > 30) {
+                if (trimmedFullName.length < 2 || trimmedFullName.length > 30) {
                     return res.status(400).json({
-                        message:
-                            "Username must be between 3 and 30 characters.",
+                        message: "Validation Error",
+                        i18nKey: "profilePage.usernameLengthError",
                     });
                 }
                 updateData.fullName = trimmedFullName;

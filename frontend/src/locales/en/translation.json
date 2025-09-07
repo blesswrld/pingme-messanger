@@ -88,7 +88,7 @@
         "active": "Active",
         "errorReadingFile": "Error reading file.",
         "failedToReadImage": "Failed to read image.",
-        "usernameLengthError": "Username must be between 3 and 30 characters.",
+        "usernameLengthError": "Username must be between 2 and 30 characters.",
         "changePhoto": "Change",
         "sendMessage": "Send Message",
         "noBioYet": "This user doesn't have any bio yet",
@@ -134,21 +134,27 @@
         "invalidEmail": "Invalid email format",
         "passwordRequired": "Password is required",
         "passwordMinLength": "Password must be at least 6 characters",
-        "GoogleGitHubServices": "Registration via Google and GitHub services is not yet available.."
+        "GoogleGitHubServices": "Registration/Login via Google and GitHub services is not yet fully available, but you can try!",
+        "oauthFailed": "Authentication with social provider failed. Please try again.",
+        "genericError": "An unexpected error occurred. Please try again.",
+        "googleAuth": "Authenticate with Google",
+        "githubAuth": "Authenticate with GitHub"
     },
     "signUpPage": {
         "createAccountTitle": "Create Account",
         "getStarted": "Get started with your free account",
         "usernamePlaceholder": "Username",
-        "usernameHint": "Must be 3 to 30 characters, containing only letters, numbers, or dash",
+        "usernameHint": "Must be 2 to 30 characters, containing only letters, numbers, or dash",
         "createAccountButton": "Create Account",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
         "howToSignInTitle": "What if I already have an account?",
         "howToSignInContent": "Click the \"Sign in\" link above or continue with Google or GitHub account. (not available yet)",
         "usernameRequired": "Username is required",
-        "usernameInvalidFormat": "Username must be 3 to 30 characters, containing only letters, numbers, or dash",
-        "GoogleGitHubServices": "Login via Google and GitHub services is not yet available.."
+        "usernameInvalidFormat": "Username must be 2 to 30 characters, containing only letters, numbers, or dash",
+        "GoogleGitHubServices": "Registration/Login via Google and GitHub services is not yet fully available, but you can try!",
+        "oauthFailed": "Authentication with social provider failed. Please try again.",
+        "genericError": "An unexpected error occurred during signup. Please try again."
     },
     "settingsPage": {
         "themes": {
@@ -182,7 +188,6 @@
             "privacyUpdatedError": "Failed to update settings."
         }
     },
-
     "userSearch": {
         "placeholder": "Search users...",
         "clearSearch": "Clear search",

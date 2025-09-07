@@ -31,6 +31,7 @@ export const App = () => {
                 <Loader className="size-10 animate-spin" />
             </div>
         );
+
     return (
         <div data-theme={theme}>
             <Navbar />
